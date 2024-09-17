@@ -1,0 +1,16 @@
+/* src/Css/ReviewCard.css */
+.review-card {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.review-card h3 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.review-card p {
+    margin: 5px 0;
+}

@@ -1,0 +1,10 @@
+.star-rating {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.star-rating .FaStar {
+    margin-right: 5px;
+    cursor: pointer;
+}

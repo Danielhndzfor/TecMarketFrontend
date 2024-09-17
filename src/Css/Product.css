@@ -1,0 +1,36 @@
+.product-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.product-item {
+    width: 200px;
+    margin: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.product-item img {
+    max-width: 100%;
+    height: auto;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    list-style-type: none;
+    padding: 0;
+}
+
+.page-item {
+    margin: 0 5px;
+}
+
+.page-item a {
+    text-decoration: none;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    color: black;
+}

@@ -1,7 +1,5 @@
 import axios from 'axios';
-
-// Configura la URL base de tu API
-const API_URL = 'https://tecmarketback-372c5b6708b1.herokuapp.com/api/products';  // Ajusta la URL según tu configuración
+import { API_URL } from '../config'; // Importa el valor de API_URL desde config.js
 
 // Obtener el token del localStorage
 const getAuthToken = () => localStorage.getItem('token');
@@ -17,7 +15,7 @@ const getConfig = (isMultipart = false) => ({
 // Obtener todos los productos
 export const getProducts = async () => {
     try {
-        const response = await axios.get(API_URL);
+        const response = await axios.get(`${API_URL}/api/products`);
         return response.data;
     } catch (error) {
         console.error('Error fetching products:', error.message);
@@ -28,7 +26,7 @@ export const getProducts = async () => {
 // Obtener un producto por ID
 export const getProduct = async (id) => {
     try {
-        const response = await axios.get(`${API_URL}/${id}`);
+        const response = await axios.get(`${API_URL}/api/products/${id}`);
         return response.data;
     } catch (error) {
         console.error(`Error fetching product ${id}:`, error.message);
@@ -40,7 +38,7 @@ export const getProduct = async (id) => {
 export const createProduct = async (formData) => {
     try {
         // Asegúrate de que formData contenga todos los datos del producto y las imágenes
-        const response = await axios.post(API_URL, formData, getConfig(true));
+        const response = await axios.post(`${API_URL}/api/products/`, formData, getConfig(true));
         return response.data;
     } catch (error) {
         console.error('Error al crear el producto:', error.response ? error.response.data : error.message);
@@ -52,7 +50,7 @@ export const createProduct = async (formData) => {
 export const updateProduct = async (id, formData) => {
     try {
         // Realiza la solicitud PUT usando axios
-        const response = await axios.put(`${API_URL}/${id}`, formData, getConfig(true));
+        const response = await axios.put(`${API_URL}/api/products/${id}`, formData, getConfig(true));
         return response.data; // Devuelve los datos de la respuesta
     } catch (error) {
         // Maneja errores de la solicitud
@@ -65,7 +63,7 @@ export const updateProduct = async (id, formData) => {
 // Eliminar un producto
 export const deleteProduct = async (id) => {
     try {
-        const response = await axios.delete(`${API_URL}/${id}`, getConfig());
+        const response = await axios.delete(`${API_URL}/api/products/${id}`, getConfig());
         return response.data;
     } catch (error) {
         console.error(`Error deleting product ${id}:`, error.message);

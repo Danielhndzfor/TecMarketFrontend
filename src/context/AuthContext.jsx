@@ -1,10 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 
-// Crear el contexto
 const AuthContext = createContext();
 
-// Proveedor del contexto
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -13,55 +11,57 @@ export const AuthProvider = ({ children }) => {
         const fetchUser = async () => {
             const token = localStorage.getItem('token');
             if (!token) {
+                setUser(null);
                 setLoading(false);
                 return;
             }
-
+    
             try {
                 const response = await axios.get('/auth/me', {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                    headers: { Authorization: `Bearer ${token}` }
                 });
-
-                setUser(response.data); // Suponiendo que la respuesta contiene el usuario
+                setUser(response.data);
             } catch (error) {
-                console.error('Error al obtener el usuario:', error);
                 setUser(null);
+                console.error('Error al obtener el usuario:', error);
             } finally {
                 setLoading(false);
             }
         };
-
-        fetchUser();
+    
+        fetchUser(); // Llamada a la función para cargar el usuario al montar el componente
     }, []);
+    
+    
 
     const login = async (email, password) => {
         try {
             const response = await axios.post('/auth/login', { email, password });
-            const { token } = response.data;
+    
+            const { token, user } = response.data;
+    
+            // Guarda el token en localStorage
             localStorage.setItem('token', token);
-            const userResponse = await axios.get('/auth/me', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setUser(userResponse.data);
+    
+            // Actualiza el estado de autenticación
+            setUser(user);
+    
+            // Redirige a una ruta protegida tras el login
+            window.location.href = '/home'; // O la ruta protegida que desees
         } catch (error) {
-            console.error('Error al iniciar sesión:', error);
-            throw new Error('Error al iniciar sesión');
+            console.error('Error durante el login:', error.response?.data?.message || error.message);
+            throw error;
         }
     };
+    
+    
 
     const logout = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            await axios.post('/auth/logout', {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            localStorage.removeItem('token');
-            setUser(null);
-        } catch (error) {
-            console.error('Error al cerrar sesión:', error);
-        }
+        // Implementación de logout...
+        localStorage.removeItem('token');
+        setUser(null);
+        // Redirige a una ruta protegida tras el login
+        window.location.href = '/'; // O la ruta protegida que desees
     };
 
     return (
@@ -71,5 +71,4 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-// Hook para usar el contexto
 export const useAuth = () => useContext(AuthContext);

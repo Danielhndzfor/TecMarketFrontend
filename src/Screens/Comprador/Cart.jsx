@@ -3,13 +3,20 @@ import { CartContext } from '../../context/CartContext';
 import { getCart, addToCart, removeFromCart } from '../../api/cart';
 import { getUser } from '../../api/auth';
 import { getProduct } from '../../api/products';
+import { createPayment } from '../../api/payment';
+import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 
 const Cart = () => {
     const { cart, setCart } = useContext(CartContext);
     const [userId, setUserId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [products, setProducts] = useState({}); // Para almacenar detalles del producto
+    const [products, setProducts] = useState({});
+    const [preferenceId, setPreferenceId] = useState(null);  // Nueva variable para almacenar preferenceId
+
+    useEffect(() => {
+        initMercadoPago('APP_USR-b55c660a-f030-4e2a-bf1a-f64ee945f223', { locale: 'es-MX' }); // Inicializa Mercado Pago
+    }, []);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -33,28 +40,22 @@ const Cart = () => {
             try {
                 const data = await getCart(userId);
                 if (!data || !data.items) {
-                    // Si el carrito no tiene items, lo consideramos vacío
                     setCart({ items: [] });
                 } else {
                     setCart(data);
-
-                    // Fetch detalles de productos si hay items
                     const productPromises = data.items.map(async (item) => {
                         const product = await getProduct(item.product);
                         return { ...item, product };
                     });
                     const productsDetails = await Promise.all(productPromises);
-                    setProducts(
-                        productsDetails.reduce((acc, item) => {
-                            acc[item.product._id] = item.product;
-                            return acc;
-                        }, {})
-                    );
+                    setProducts(productsDetails.reduce((acc, item) => {
+                        acc[item.product._id] = item.product;
+                        return acc;
+                    }, {}));
                 }
             } catch (error) {
                 console.error('Error fetching cart:', error.message);
                 setError('Failed to fetch cart. Please try again later.');
-                // Si hay error (por ejemplo, carrito no existe), mostramos carrito vacío
                 setCart({ items: [] });
             }
         };
@@ -115,6 +116,21 @@ const Cart = () => {
         calculateTotal();
     }, [cart.items, products]);
 
+    const handlePayment = async () => {
+        try {
+            const data = await createPayment(cart._id);
+            if (data && data.preferenceId) {
+                setPreferenceId(data.preferenceId);
+            } else {
+                throw new Error("No se recibió preferenceId del servidor.");
+            }
+        } catch (error) {
+            console.error('Error al procesar el pago:', error.message);
+            alert('Error al procesar el pago: ' + error.message); // Muestra un mensaje de alerta al usuario
+        }
+    };
+    
+
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
 
@@ -138,9 +154,13 @@ const Cart = () => {
                     ))}
                 </ul>
             ) : (
-                <p>Your cart is empty.</p> // Mostramos carrito vacío si no tiene productos
+                <p>Your cart is empty.</p>
             )}
-            <h2>Total: ${calculateTotal().toFixed(2)}</h2> {/* Mostrando el total con 2 decimales */}
+            <h2>Total: ${calculateTotal().toFixed(2)}</h2>
+            <button onClick={handlePayment}>Pagar Ahora</button> {/* Botón de pago */}
+            
+            {/* Renderizar la billetera si preferenceId está disponible */}
+            {preferenceId && <Wallet initialization={{ preferenceId }} />}
         </div>
     );
 };

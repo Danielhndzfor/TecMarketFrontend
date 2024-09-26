@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../api/auth';
+import { useAuth } from '../context/AuthContext'; // Usa tu AuthContext en lugar de manejar manualmente el token
 
 function Login() {
     const [formData, setFormData] = useState({
@@ -8,8 +8,17 @@ function Login() {
         password: ''
     });
 
-    const { email, password } = formData;
+    const { login, user } = useAuth();  // Extraemos login y el usuario desde el AuthContext
     const navigate = useNavigate();
+
+    const { email, password } = formData;
+
+    // Efecto para redirigir si el usuario ya está autenticado
+    useEffect(() => {
+        if (user) {
+            navigate('/home');  // Si el usuario ya está autenticado, redirigir inmediatamente
+        }
+    }, [user, navigate]);  // Dependencia del estado del usuario
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -22,10 +31,10 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await login(email, password); // No necesitas manejar el token aquí
-            navigate('/home');
+            await login(email, password);  // Llamada al login del contexto
+            // Redirigir tras el login exitoso (esto ya está cubierto en el useEffect si el usuario cambia)
         } catch (error) {
-            console.error('Error al iniciar sesión:', error.response ? error.response.data : error.message);
+            console.error('Error al iniciar sesión:', error);
             alert('Error al iniciar sesión: ' + (error.response ? error.response.data.message : error.message));
         }
     };
@@ -66,5 +75,3 @@ function Login() {
 }
 
 export default Login;
-
-

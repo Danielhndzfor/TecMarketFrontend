@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { CartContext } from '../context/CartContext';  // Asegúrate de tener el CartContext disponible
 import { getUser } from '../api/auth'; // Importa la función para obtener el usuario
+import { API_URL } from '../config'; // Asegúrate de usar la ruta correcta
 
 const ProductCard = ({ product }) => {
     const [rating, setRating] = useState(5); // Estado para manejar la calificación
@@ -44,7 +45,7 @@ const ProductCard = ({ product }) => {
             return;
         }
         try {
-            const response = await axios.post('https://tecmarketback-372c5b6708b1.herokuapp.com/api/cart/add', {
+            const response = await axios.post(`${API_URL}/api/cart/add`, {
                 userId,
                 productId: product._id,
                 quantity: 1,  // Puedes dejar que el usuario elija la cantidad más adelante

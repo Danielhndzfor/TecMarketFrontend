@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { API_URL } from '../config'; // Asegúrate de usar la ruta correcta
 
-// Configura la URL base del backend
-const BASE_URL = 'https://tecmarketback-372c5b6708b1.herokuapp.com/api';  // Nota: Aquí debe ser '/api', no '/api/api'
+// Define la URL base de tu API
+const BASE_URL = `${API_URL}/api`;
 
 // Configura una instancia de axios con la URL base
 const axiosInstance = axios.create({

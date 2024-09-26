@@ -1,50 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getUser } from '../../api/auth'; // Asegúrate de que la ruta sea correcta
+import { API_URL } from '../../config'; // Asegúrate de usar la ruta correcta
 
-const API_URL = 'https://tecmarketback-372c5b6708b1.herokuapp.com/api/auth';
 
 function ChangeRole() {
     const [role, setRole] = useState('comprador');
     const [message, setMessage] = useState('');
     const [userId, setUserId] = useState('');
 
-    const token = localStorage.getItem('token');
-
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const response = await axios.get(`${API_URL}/me`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                setUserId(response.data._id);  // Acceder a data
-                setRole(response.data.role);   // Acceder a data
+                const userData = await getUser(); // Llama a la función getUser
+                setUserId(userData._id);
+                setRole(userData.role);
             } catch (error) {
                 setMessage('Error al obtener datos del usuario');
                 console.error('Error:', error);
             }
         };
         fetchUser();
-    }, [token]);
+    }, []);
 
     const handleRoleChange = async (newRole) => {
         try {
-            const response = await axios.put(`${API_URL}/update-role/${userId}`, { role: newRole }, {
+            const response = await axios.put(`${API_URL}/api/auth/update-role/${userId}`, { role: newRole }, {
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
-
+    
             setRole(newRole);
-            setMessage('Rol actualizado correctamente');
-            // Actualizar el token solo si es necesario, de lo contrario, puedes eliminar esta línea
-            localStorage.setItem('token', response.data.token);
+            setMessage(response.data.message);
         } catch (error) {
+            console.error('Error:', error.response?.data?.message || error.message);
             setMessage('Error al actualizar el rol');
-            console.error('Error:', error);
         }
     };
+    
+    
+    
 
     return (
         <div>

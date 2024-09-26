@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import PrivateRoute from './PrivateRoute';
-import { AuthProvider } from './context/AuthContext'; // Importa el AuthProvider
 
 import Login from './Screens/Login';
 import Register from './Screens/Register';
@@ -17,7 +16,6 @@ import NotAuthorized from './Screens/NotAuthorized';
 
 function App() {
   return (
-    <AuthProvider> {/* Rodea la app con AuthProvider */}
       <Router>
         <TitleUpdater />
         <Routes>
@@ -92,7 +90,6 @@ function App() {
           <Route path="/logout" element={<Logout />} />
         </Routes>
       </Router>
-    </AuthProvider>
   );
 }
 

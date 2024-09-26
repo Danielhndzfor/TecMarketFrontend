@@ -1,9 +1,11 @@
 // axiosConfig.js
 import axios from 'axios';
-import { logout } from './auth';  // Asegúrate de que esta función exista y esté importada correctamente
+import { logout } from './auth'; 
+import { API_URL } from '../config'; // Asegúrate de usar la ruta correcta
 
 // URL base de la API
-axios.defaults.baseURL = 'https://tecmarketback-372c5b6708b1.herokuapp.com/api';
+axios.defaults.baseURL = `${API_URL}/api`;
+
 
 // Configura un interceptor para añadir el token en cada solicitud
 axios.interceptors.request.use(

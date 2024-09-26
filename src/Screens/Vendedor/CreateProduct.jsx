@@ -21,6 +21,7 @@ const CreateProduct = () => {
     const [categories, setCategories] = useState([]);
     const [images, setImages] = useState([]);
     const [seller, setSeller] = useState('');
+    const [successMessage, setSuccessMessage] = useState(''); // Estado para mensaje de éxito
 
     useEffect(() => {
         // Cargar las categorías al montar el componente
@@ -61,7 +62,15 @@ const CreateProduct = () => {
         try {
             // Llamada a la API para crear el producto
             await createProduct(formData);
-            // Manejar éxito (por ejemplo, redirigir al usuario o mostrar un mensaje)
+            // Manejar éxito
+            setSuccessMessage('Producto creado exitosamente!'); // Mensaje de éxito
+            // Limpia el formulario
+            setName('');
+            setDescription('');
+            setPrice('');
+            setStock('');
+            setCategory('');
+            setImages([]);
         } catch (error) {
             console.error('Error creando el producto:', error);
             // Manejar error (mostrar un mensaje de error al usuario)
@@ -69,22 +78,26 @@ const CreateProduct = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre" required />
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descripción" required />
-            <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Precio" required />
-            <input type="number" value={stock} onChange={(e) => setStock(e.target.value)} placeholder="Stock" required />
-            <select value={category} onChange={(e) => setCategory(e.target.value)} required>
-                <option value="">Selecciona una categoría</option>
-                {categories.map((cat) => (
-                    <option key={cat._id} value={cat._id}>{cat.name}</option>
-                ))}
-            </select>
-            <input type="file" multiple onChange={handleImageChange} />
-            <button type="submit">Crear Producto</button>
-        </form>
+        <div>
+            <form onSubmit={handleSubmit}>
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre" required />
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descripción" required />
+                <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Precio" required />
+                <input type="number" value={stock} onChange={(e) => setStock(e.target.value)} placeholder="Stock" required />
+                <select value={category} onChange={(e) => setCategory(e.target.value)} required>
+                    <option value="">Selecciona una categoría</option>
+                    {categories.map((cat) => (
+                        <option key={cat._id} value={cat._id}>{cat.name}</option>
+                    ))}
+                </select>
+                <input type="file" multiple onChange={handleImageChange} />
+                <button type="submit">Crear Producto</button>
+            </form>
+            {successMessage && <p>{successMessage}</p>} {/* Mostrar mensaje de éxito */}
+        </div>
     );
 };
 
 export default CreateProduct;
+
 

@@ -1,0 +1,85 @@
+/* Contenedor principal para el dashboard */
+.dashboard-container {
+    padding: 20px;
+    background-color: #f8f9fa; /* Color de fondo suave para el dashboard */
+    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+}
+
+/* Estilos para la tabla de órdenes */
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    border-radius: 8px; /* Bordes redondeados en la tabla */
+    overflow: hidden; /* Para redondear las esquinas en la tabla */
+}
+
+/* Estilos para las celdas de la tabla */
+.orders-table th, .orders-table td {
+    border: 1px solid #ddd;
+    padding: 12px; /* Mayor espacio para una mejor legibilidad */
+    text-align: center;
+    font-size: 14px; /* Tamaño de fuente más grande */
+}
+
+/* Encabezado de la tabla */
+.orders-table th {
+    background-color: #007bff; /* Color de fondo azul */
+    color: white;
+    font-weight: bold; /* Negrita para los encabezados */
+}
+
+/* Filas alternas */
+.orders-table tr:nth-child(even) {
+    background-color: #f2f2f2; /* Color claro para filas pares */
+}
+
+/* Hover en filas */
+.orders-table tr:hover {
+    background-color: #d1ecf1; /* Color suave al pasar el ratón */
+}
+
+/* Estilos para los selectores */
+.orders-table select {
+    padding: 6px; /* Espacio adicional */
+    border: 1px solid #007bff; /* Bordes de color azul */
+    border-radius: 4px; /* Bordes redondeados */
+    outline: none;
+    transition: border-color 0.3s; /* Transición suave */
+}
+
+/* Efecto de enfoque en los selectores */
+.orders-table select:focus {
+    border-color: #0056b3; /* Color más oscuro al enfocarse */
+}
+
+/* Estilos para el estado */
+.status {
+    display: inline-block;
+    padding: 6px 12px; /* Mayor espacio para el estado */
+    border-radius: 4px;
+    color: white; /* Cambia a blanco para que el texto resalte en los colores de fondo */
+    font-weight: bold; /* Negrita para mayor énfasis */
+}
+
+/* Estado completado */
+.status.completado {
+    background-color: #28a745; /* Verde para completado */
+}
+
+/* Estado pendiente */
+.status.pendiente {
+    background-color: #ffc107; /* Amarillo para pendiente */
+    color: black; /* Cambia a negro para mejor contraste */
+}
+
+/* Estado cancelado */
+.status.cancelado {
+    background-color: #dc3545; /* Rojo para cancelado */
+}
+
+/* Añadir un margen inferior a las tablas */
+.orders-table {
+    margin-bottom: 20px; /* Espacio entre tablas si hay más de una */
+}

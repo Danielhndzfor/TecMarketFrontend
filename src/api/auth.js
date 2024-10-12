@@ -37,20 +37,26 @@ export const login = async (email, password) => {
 
 
 // Función para hacer registro
-export const register = async (name, email, password, role) => {
+// Función para hacer registro
+export const register = async (name, firstName, lastName, dateOfBirth, phoneNumber, email, password, role) => {
     try {
         const response = await axios.post(`${API_URL}/api/auth/register`, {
             name,
+            firstName,
+            lastName,
+            dateOfBirth,
+            phoneNumber,
             email,
             password,
-            role,  // El role se envía aquí
+            role,  // El role se envía aquí (opcional)
         });
 
         return response.data;
     } catch (error) {
-        throw new Error(error.response?.data?.message || 'Error during registration');
+        throw new Error(error.response?.data?.message || 'Error durante el registro');
     }
 };
+
 
 // Función para hacer logout
 export const logout = async () => {

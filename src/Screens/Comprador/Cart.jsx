@@ -1,10 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { CartContext } from '../../context/CartContext';
-import { getCart, addToCart, removeFromCart } from '../../api/cart';
+import { getCart, addToCart, removeFromCart, clearCart } from '../../api/cart'; // Importamos clearCart
 import { getUser } from '../../api/auth';
 import { getProduct } from '../../api/products';
-import { createPayment } from '../../api/payment';
-import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
+import { createOrder } from '../../api/order'; // Importamos createOrder
 
 const Cart = () => {
     const { cart, setCart } = useContext(CartContext);
@@ -12,11 +11,9 @@ const Cart = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [products, setProducts] = useState({});
-    const [preferenceId, setPreferenceId] = useState(null);  // Nueva variable para almacenar preferenceId
-
-    useEffect(() => {
-        initMercadoPago('APP_USR-b55c660a-f030-4e2a-bf1a-f64ee945f223', { locale: 'es-MX' }); // Inicializa Mercado Pago
-    }, []);
+    const [step, setStep] = useState(1);
+    const [paymentMethod, setPaymentMethod] = useState('');
+    const [orderNumber, setOrderNumber] = useState(null);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -116,51 +113,136 @@ const Cart = () => {
         calculateTotal();
     }, [cart.items, products]);
 
-    const handlePayment = async () => {
+    const handleOrderConfirmation = async () => {
+        const orderData = {
+            userId,
+            items: cart.items.map(item => {
+                const product = products[item.product];
+                const sellerId = product?.seller;
+
+                if (!sellerId) {
+                    console.error(`Invalid seller for product: ${item.product}`);
+                    throw new Error(`Seller for product ${item.product} is required and must be valid.`);
+                }
+
+                return {
+                    productId: item.product, // Cambia 'product' a 'productId'
+                    quantity: item.quantity,
+                    unit_price: product.price || 0,
+                    title: product.name || 'Unknown Product',
+                    sellerId: sellerId,
+                };
+            }),
+            total: calculateTotal(),
+            paymentMethod: paymentMethod.toLowerCase(),
+        };
+
         try {
-            const data = await createPayment(cart._id);
-            if (data && data.preferenceId) {
-                setPreferenceId(data.preferenceId);
-            } else {
-                throw new Error("No se recibió preferenceId del servidor.");
-            }
+            const order = await createOrder(orderData);
+            console.log('Order created successfully:', order);
+            setOrderNumber(order._id); // Guardamos el número de orden
+
+            // Vaciamos el carrito
+            await clearCart(userId);
+            setCart({ items: [] });
+
+            // Pasamos al step 4
+            setStep(4);
         } catch (error) {
-            console.error('Error al procesar el pago:', error.message);
-            alert('Error al procesar el pago: ' + error.message); // Muestra un mensaje de alerta al usuario
+            console.error('Error confirming order:', error.message);
+            alert('Error confirming order: ' + error.message);
         }
     };
-    
+
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
 
     return (
         <div>
-            <h1>Your Cart</h1>
-            {cart.items && cart.items.length > 0 ? (
-                <ul>
-                    {cart.items.map(item => (
-                        <li key={item.product}>
-                            {products[item.product]?.name || 'Loading...'} - 
-                            <input
-                                type="number"
-                                min="1"
-                                value={item.quantity}
-                                onChange={(e) => handleQuantityChange(item.product, Number(e.target.value))}
-                            />
-                            x ${products[item.product]?.price || 0}
-                            <button onClick={() => handleRemove(item.product)}>Remove</button>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p>Your cart is empty.</p>
+            {step === 1 && (
+                <>
+                    <h1>Your Cart</h1>
+                    {cart.items && cart.items.length > 0 ? (
+                        <ul>
+                            {cart.items.map(item => (
+                                <li key={item.product}>
+                                    {products[item.product]?.name || 'Loading...'} -
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={item.quantity}
+                                        onChange={(e) => handleQuantityChange(item.product, Number(e.target.value))}
+                                    />
+                                    x ${products[item.product]?.price || 0}
+                                    <button onClick={() => handleRemove(item.product)}>Remove</button>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>Your cart is empty.</p>
+                    )}
+                    <h2>Total: ${calculateTotal().toFixed(2)}</h2>
+                    <button onClick={() => setStep(2)}>Siguiente</button>
+                </>
             )}
-            <h2>Total: ${calculateTotal().toFixed(2)}</h2>
-            <button onClick={handlePayment}>Pagar Ahora</button> {/* Botón de pago */}
-            
-            {/* Renderizar la billetera si preferenceId está disponible */}
-            {preferenceId && <Wallet initialization={{ preferenceId }} />}
+
+            {step === 2 && (
+                <>
+                    <h2>Selecciona tu método de pago</h2>
+                    <label>
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="Efectivo"
+                            checked={paymentMethod === 'Efectivo'}
+                            onChange={() => setPaymentMethod('Efectivo')}
+                        />
+                        Pago en Efectivo
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="Transferencia"
+                            checked={paymentMethod === 'Transferencia'}
+                            onChange={() => setPaymentMethod('Transferencia')}
+                        />
+                        Pago con Transferencia
+                    </label>
+                    <button onClick={() => handleOrderConfirmation()}>Confirmar Pedido</button>
+                    <button onClick={() => setStep(1)}>Volver</button>
+                </>
+            )}
+
+            {step === 3 && paymentMethod === 'Transferencia' && (
+                <>
+                    <h2>Detalles para Transferencia</h2>
+                    <p>Número de Orden: {orderNumber}</p>
+                    {cart.items.map(item => {
+                        const product = products[item.product];
+                        const sellerId = product?.seller;
+
+                        return (
+                            <div key={item.product}>
+                                <h3>{product?.name || 'Unknown Product'}</h3>
+                                <p>Vendedor: {sellerId?.name || 'Desconocido'}</p>
+                                <p>CLABE Interbancaria: {sellerId?.clabe || 'No disponible'}</p>
+                                <p>Concepto de Pago: {`Pago por ${item.quantity} x ${product?.name}`}</p>
+                                <p>Total a Transferir: ${(item.quantity * product.price).toFixed(2)}</p>
+                            </div>
+                        );
+                    })}
+                    <button onClick={() => setStep(4)}>Continuar</button>
+                </>
+            )}
+
+            {step === 4 && (
+                <>
+                    <h2>Pedido Confirmado</h2>
+                    <p>¡Gracias por tu compra! Tu pedido ha sido confirmado con éxito.</p>
+                </>
+            )}
         </div>
     );
 };

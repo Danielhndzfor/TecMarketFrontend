@@ -5,13 +5,17 @@ import { useNavigate } from 'react-router-dom';
 function Register() {
     const [formData, setFormData] = useState({
         name: '',
+        firstName: '',
+        lastName: '',
+        dateOfBirth: '',
+        phoneNumber: '',
         email: '',
         password: '',
         confirmPassword: '',
         role: 'comprador'  // Valor por defecto
     });
 
-    const { name, email, password, confirmPassword, role } = formData;
+    const { name, firstName, lastName, dateOfBirth, phoneNumber, email, password, confirmPassword } = formData; // Excluimos role
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -26,10 +30,8 @@ function Register() {
             return;
         }
         try {
-            await register(name, email, password, role);  // Usa 'register' aquí
-            // recargar y enviar a login
-            
-            navigate('/');  // Redirige al inicio de sesión después del registro
+            await register(name, firstName, lastName, dateOfBirth, phoneNumber, email, password, formData.role);  // Envía el rol predeterminado
+            navigate('/');  // Redirige al inicio después del registro
         } catch (error) {
             console.error('Error al registrar el usuario:', error.message);
             // Manejo de errores
@@ -45,6 +47,22 @@ function Register() {
                     <input type="text" id="name" name="name" value={name} onChange={handleChange} required />
                 </div>
                 <div>
+                    <label htmlFor="firstName">Primer Nombre:</label>
+                    <input type="text" id="firstName" name="firstName" value={firstName} onChange={handleChange} required />
+                </div>
+                <div>
+                    <label htmlFor="lastName">Apellidos:</label>
+                    <input type="text" id="lastName" name="lastName" value={lastName} onChange={handleChange} required />
+                </div>
+                <div>
+                    <label htmlFor="dateOfBirth">Fecha de Nacimiento:</label>
+                    <input type="date" id="dateOfBirth" name="dateOfBirth" value={dateOfBirth} onChange={handleChange} required />
+                </div>
+                <div>
+                    <label htmlFor="phoneNumber">Número de Teléfono:</label>
+                    <input type="tel" id="phoneNumber" name="phoneNumber" value={phoneNumber} onChange={handleChange} required />
+                </div>
+                <div>
                     <label htmlFor="email">Correo Electrónico:</label>
                     <input type="email" id="email" name="email" value={email} onChange={handleChange} required />
                 </div>
@@ -56,14 +74,7 @@ function Register() {
                     <label htmlFor="confirmPassword">Confirmar Contraseña:</label>
                     <input type="password" id="confirmPassword" name="confirmPassword" value={confirmPassword} onChange={handleChange} required />
                 </div>
-                <div>
-                    <label htmlFor="role">Rol:</label>
-                    <select id="role" name="role" value={role} onChange={handleChange}>
-                        <option value="comprador">Comprador</option>
-                        <option value="vendedor">Vendedor</option>
-                        <option value="admin">Administrador</option>
-                    </select>
-                </div>
+                {/* El campo de rol ha sido eliminado */}
                 <button type="submit">Registrar</button>
                 <div>
                     <a href="/login">Iniciar Sesión</a>
@@ -74,7 +85,3 @@ function Register() {
 }
 
 export default Register;
-
-
-
-

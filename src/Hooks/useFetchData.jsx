@@ -14,15 +14,20 @@ const useFetchData = () => {
             try {
                 setLoading(true);
                 const productsData = await getProducts();
+                if (!Array.isArray(productsData)) {
+                    throw new Error("Datos de productos no válidos");
+                }
                 setProducts(productsData);
 
                 const categoriesData = await getCategories();
-                // Asegúrate de que categoriesData sea un array de strings
+                if (!Array.isArray(categoriesData)) {
+                    throw new Error("Datos de categorías no válidos");
+                }
                 setCategories(['All', ...categoriesData.map(cat => cat.name)]);
 
                 setLoading(false);
             } catch (error) {
-                setError(error);
+                setError("Error al cargar datos de productos o categorías");
                 setLoading(false);
             }
         };
@@ -34,3 +39,4 @@ const useFetchData = () => {
 };
 
 export default useFetchData;
+

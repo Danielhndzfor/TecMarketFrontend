@@ -30,7 +30,7 @@ export const addToCart = async (userId, productId, quantity) => {
 // Función para obtener el carrito del usuario
 export const getCart = async (userId) => {
     try {
-        const response = await axiosInstance.get(`/cart/${userId}`);
+        const response = await axiosInstance.get(`/cart/${userId}`); // Corregido
         return response.data;  // Devuelve los productos del carrito
     } catch (error) {
         console.error('Error al obtener el carrito:', error);
@@ -48,6 +48,17 @@ export const removeFromCart = async (userId, productId) => {
         return response.data;  // Devuelve el carrito actualizado
     } catch (error) {
         console.error('Error al eliminar el producto del carrito:', error);
+        throw error;
+    }
+};
+
+// Función para vaciar el carrito (ejecutada tras confirmar la compra)
+export const clearCart = async (userId) => {
+    try {
+        const response = await axiosInstance.delete(`/cart/clear/${userId}`);
+        return response.data;  // Devuelve el carrito vacío
+    } catch (error) {
+        console.error('Error al vaciar el carrito:', error);
         throw error;
     }
 };

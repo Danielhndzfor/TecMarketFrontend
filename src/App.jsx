@@ -14,9 +14,13 @@ import Cart from './Screens/Comprador/Cart';
 import Logout from './Screens/Logout';
 import NotAuthorized from './Screens/NotAuthorized';
 
+import SellerForm from './Screens/Vendedor/Convertirse-vendedor';
+import Profile from './Screens/Profile';
+import Dashboard from './Screens/Vendedor/Dashboard';
+
 function App() {
   return (
-      <Router>
+    <Router>
         <TitleUpdater />
         <Routes>
           <Route path="/" element={<Login />} />
@@ -33,8 +37,6 @@ function App() {
               />
             }
           />
-
-
 
           <Route
             path="/create-product"
@@ -68,11 +70,41 @@ function App() {
           />
 
           <Route
+            path="/convertirse-vendedor"
+            element={
+              <PrivateRoute
+                element={SellerForm}
+                roles={['comprador', 'admin']} // Solo compradores pueden acceder
+              />
+            } // Solo compradores pueden acceder
+          />
+
+          <Route
             path="/change-role"
             element={
               <PrivateRoute
                 element={ChangeRole}
                 roles={['admin', 'vendedor', 'comprador']} // Solo admins pueden acceder
+              />
+            }
+          />
+
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute
+                element={Dashboard}
+                roles={['vendedor', 'admin']} // Solo vendedores pueden acceder
+              />
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute
+                element={Profile}
+                roles={['admin', 'vendedor', 'comprador']} // Solo usuarios autenticados pueden acceder
               />
             }
           />

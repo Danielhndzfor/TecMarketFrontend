@@ -10,7 +10,7 @@ import {
     CardContent,
     CardHeader,
     CardTitle
-} from '@/components/ui/card';
+} from '@/Components/ui/card';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -20,7 +20,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "@/Components/ui/alert-dialog";
 
 function Products() {
     const [products, setProducts] = useState([]);

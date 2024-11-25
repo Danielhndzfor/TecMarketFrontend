@@ -1,8 +1,8 @@
 import React from 'react';
 import { Pencil, Trash2, Search, Filter, ChevronDown, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Select } from "@/Components/ui/select";
 
 const ProductTable = ({ products }) => {
     const allKeys = Array.from(new Set(products.flatMap(product => Object.keys(product))));

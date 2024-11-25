@@ -3,7 +3,7 @@ import ProductCard from '../Components/ProductCard';
 import '../Css/Home.css';
 import NavBar from '../Components/NavBar';
 import { useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { getCategories } from '../api/category';
 import { getProductsByCategory } from '../api/products'; // Importar función para obtener productos por categoría
 import useFetchData from '../Hooks/useFetchData';

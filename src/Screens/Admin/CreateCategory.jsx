@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Importar el hook de navegación
 import { createCategory } from '../../api/category';
 import { getUser } from '../../api/auth';
+import NavBar from '@/Components/NavBar';
+import '../../Css/createCategory.css';
 
 function CreateCategory() {
     const [formData, setFormData] = useState({
@@ -11,6 +14,7 @@ function CreateCategory() {
 
     const [message, setMessage] = useState('');  // Para mostrar mensajes de éxito o error
     const [isAdmin, setIsAdmin] = useState(false);
+    const navigate = useNavigate(); // Inicializar el hook useNavigate
 
     useEffect(() => {
         async function fetchUser() {
@@ -50,7 +54,7 @@ function CreateCategory() {
         try {
             await createCategory(name, description);
             setMessage('Categoría creada exitosamente.');
-            setFormData({ name: '', description: '' });  // Limpiar el formulario
+            setTimeout(() => navigate('/categories'), 2000); // Redirigir después de 2 segundos
         } catch (error) {
             setMessage('Error al crear la categoría.');
             console.error('Error al crear la categoría:', error);
@@ -62,33 +66,41 @@ function CreateCategory() {
     }
 
     return (
-        <div>
-            <h1>Crear Categoría</h1>
-            {message && <p>{message}</p>}
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="name">Nombre de la Categoría:</label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="description">Descripción:</label>
-                    <textarea
-                        id="description"
-                        name="description"
-                        value={description}
-                        onChange={handleChange}
-                    />
-                </div>
-                <button type="submit">Crear Categoría</button>
-            </form>
-        </div>
+        <>
+            <NavBar />
+            <div className="containerC">
+                <h1 className="titleC">Crear Categoría</h1>
+                {message && <p className="messageC">{message}</p>}
+                <form onSubmit={handleSubmit} className="formC">
+                    <div className="form-groupC">
+                        <label htmlFor="name">Nombre de la Categoría:</label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={name}
+                            onChange={handleChange}
+                            required
+                            className="inputC"
+                        />
+                    </div>
+                    <div className="form-groupC">
+                        <label htmlFor="description">Descripción:</label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            value={description}
+                            onChange={handleChange}
+                            className="textareaC"
+                        />
+                    </div>
+                    <div className="form-actionsC">
+                        <button type="submit" className="btn-submitC">Crear Categoría</button>
+                        <button type="button" onClick={() => navigate('/categories')} className="btn-cancelC">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </>
     );
 }
 

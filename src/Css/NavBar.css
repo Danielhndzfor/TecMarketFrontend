@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.navbar {
+    padding: 0.5rem 1rem;
+}
+
+.navbar-nav {
+    display: flex;
+    align-items: center; /* Alinea verticalmente */
+}
+
+.nav-link {
+    margin: 0 10px;
+    display: flex;
+    align-items: center; /* Alinea los iconos verticalmente */
+}
+
+.nav-item {
+    display: flex;
+    align-items: center; /* Alinea verticalmente */
+}
+
+/* Menú hamburguesa */
+.hamburger-menu {
+    display: none; /* Oculto por defecto */
+    position: absolute;
+    top: 60px; /* Ajustar según la altura de la navbar */
+    left: 0;
+    right: 0;
+    background: #343a40; /* Fondo oscuro */
+    padding: 1rem;
+    flex-direction: column; /* Alinea en columna */
+    align-items: center; /* Alinea horizontalmente */
+    z-index: 9999; /* Asegúrate de que esté en la parte superior */
+}
+
+.hamburger-menu.show {
+    display: flex; /* Muestra el menú al abrir */
+}
+
+.hamburger-menu .nav-item {
+    width: 100%; /* Ocupar el ancho completo */
+    text-align: center; /* Centramos el texto */
+}
+
+.btn-success {
+    margin-top: 10px; /* Espacio entre el botón y los enlaces */
+}
+
+/* Alineación en el menú hamburguesa */
+.collapse.navbar-collapse {
+    display: flex;
+    flex-direction: column; /* Alinea los elementos en columna */
+    align-items: center; /* Alinea horizontalmente */
+}
+
+/* Para el carrito */
+.d-flex {
+    display: flex;
+    align-items: center; /* Alinea verticalmente */
+}
+
+.navbar-toggler {
+    margin-right: 10px; /* Espacio entre el icono de menú y el carrito */
+}

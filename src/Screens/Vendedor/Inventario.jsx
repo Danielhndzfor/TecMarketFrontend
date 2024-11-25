@@ -11,57 +11,57 @@ function Inventario() {
     const [categories, setCategories] = useState([]);
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [isUpdating, setIsUpdating] = useState(false); // Nueva variable para el loading de actualización
     const [imagesToDelete, setImagesToDelete] = useState([]);
 
     const { user } = useAuth();
     const navigate = useNavigate();
 
+
+    const fetchProducts = async () => {
+        setIsLoading(true);
+        try {
+            const data = await getProducts();
+            const filteredProducts = user.role === 'admin'
+                ? data
+                : data.filter(product => {
+                    return product.seller && String(product.seller._id || product.seller) === String(user._id);
+                });
+            setProducts(filteredProducts);
+        } catch (error) {
+            console.error('Error al obtener productos:', error);
+            setMessage('Error al obtener productos');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const fetchCategories = async () => {
+        try {
+            const data = await getCategories();
+            setCategories(data);
+        } catch (error) {
+            console.error('Error al obtener categorías:', error);
+            setMessage('Error al obtener categorías');
+        }
+    };
+
     useEffect(() => {
-        const fetchProducts = async () => {
-            setIsLoading(true);
-            try {
-                const data = await getProducts();
-                const filteredProducts = user.role === 'admin'
-                    ? data
-                    : data.filter(product => {
-                        if (!product.seller) {
-                            return false;
-                        }
-                        return String(product.seller._id || product.seller) === String(user._id);
-                    });
-
-                setProducts(filteredProducts);
-            } catch (error) {
-                console.error('Error al obtener productos:', error);
-                setMessage('Error al obtener productos');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        const fetchCategories = async () => {
-            try {
-                const data = await getCategories();
-                setCategories(data);
-            } catch (error) {
-                console.error('Error al obtener categorías:', error);
-                setMessage('Error al obtener categorías');
-            }
-        };
-
         fetchProducts();
         fetchCategories();
     }, [user._id, user.role]);
 
     const handleEditProduct = async () => {
+        setIsUpdating(true); // Activar loading al actualizar
         try {
             const formData = new FormData();
             formData.append('name', editProduct.name);
             formData.append('price', editProduct.price);
             formData.append('stock', editProduct.stock);
             formData.append('description', editProduct.description);
-            formData.append('category', editProduct.category); // Asegúrate de que el ID de categoría se esté enviando correctamente
+            formData.append('category', editProduct.category._id);
 
+            // Agregar imágenes
             if (editProduct.images) {
                 editProduct.images.forEach((image) => {
                     if (typeof image !== 'string') {
@@ -70,17 +70,26 @@ function Inventario() {
                 });
             }
 
+            // Imágenes a eliminar
             if (imagesToDelete.length > 0) {
                 formData.append('imagesToDelete', JSON.stringify(imagesToDelete));
             }
 
             const updatedProduct = await updateProduct(editProduct._id, formData);
-            setProducts(products.map(p => p._id === updatedProduct._id ? updatedProduct : p));
+            console.log('Producto actualizado:', updatedProduct);
+
+            // Muestra el mensaje de éxito y cierra el modal de edición
             setMessage('Producto actualizado correctamente');
-            setEditProduct(null);
+            setEditProduct(null); // Cierra el modal de edición
+
+            // Vuelve a obtener la lista de productos para asegurarse de que la tabla esté actualizada
+            fetchProducts();
+
         } catch (error) {
             console.error('Error al actualizar el producto:', error);
             setMessage('Error al actualizar el producto');
+        } finally {
+            setIsUpdating(false); // Desactivar loading después de la actualización
         }
     };
 
@@ -98,8 +107,21 @@ function Inventario() {
     const handleImageChange = (e) => {
         const files = e.target.files;
         const imagesArray = Array.from(files);
-        setEditProduct({ ...editProduct, images: imagesArray });
+
+        // Si el número total de imágenes es mayor a 5, mostrar una alerta
+        const totalImages = (editProduct.images || []).length + imagesArray.length;
+        if (totalImages > 5) {
+            alert('Solo puedes subir un máximo de 5 imágenes.');
+            return;
+        }
+
+        // Agregar las nuevas imágenes sin reemplazar las existentes
+        setEditProduct({
+            ...editProduct,
+            images: [...(editProduct.images || []), ...imagesArray]
+        });
     };
+
 
     const handleImageDelete = (imageToRemove) => {
         setImagesToDelete([...imagesToDelete, imageToRemove]);
@@ -108,29 +130,31 @@ function Inventario() {
         setMessage('Imagen eliminada correctamente');
     };
 
-    const getStatus = (stock, initialStock) => {
+    const getStatus = (stock) => {
         if (stock === 0) return 'SIN STOCK';
-        if (stock < initialStock * 0.5) return 'SURTIR';
+        if (stock <= 3) return 'SURTIR';
         return 'DISPONIBLE';
     };
-
-    if (!user || (user.role !== 'admin' && user.role !== 'vendedor')) {
-        return <div>No tienes permiso para ver esta página.</div>;
-    }
 
     const totalProducts = products.length;
 
     return (
         <div className="inventory-container">
+            {(isLoading || isUpdating) && (
+                <div className="loading-overlay">
+                    <div className="loading-spinner">
+                        <div className="loading-dot"></div>
+                        <div className="loading-dot"></div>
+                        <div className="loading-dot"></div>
+                    </div>
+                </div>
+            )}
+
             <h1>Inventario</h1>
-            {isLoading ? <p className="loading">Cargando productos...</p> : (
+            {!isLoading && !isUpdating && (
                 <div className="inventory-content">
                     {message && <p className="message">{message}</p>}
-
-                    {(user.role === 'admin' || user.role === 'vendedor') && (
-                        <button className="add-product-btn" onClick={() => navigate('/create-product')}>Agregar Producto</button>
-                    )}
-
+                    <button className="add-product-btn" onClick={() => navigate('/create-product')}>Agregar Producto</button>
                     <h2>Productos en Inventario</h2>
                     <h2>Total de Productos: {totalProducts}</h2>
                     <div className="table-container">
@@ -185,12 +209,17 @@ function Inventario() {
                                         )}
                                         <td>
                                             {(user.role === 'admin' || user.role === 'vendedor') && (
-                                                <div className="action-buttons">
-                                                    <button className="edit-btn" onClick={() => setEditProduct(product)}>Editar</button>
-                                                    <button className="delete-btn" onClick={() => handleDeleteProduct(product._id)}>Eliminar</button>
+                                                <div className="action-buttons1">
+                                                    <button className="edit-btn" onClick={() => setEditProduct(product)}>
+                                                        <i className="fas fa-edit"></i>
+                                                    </button>
+                                                    <button className="delete-btn" onClick={() => handleDeleteProduct(product._id)}>
+                                                        <i className="fas fa-trash"></i>
+                                                    </button>
                                                 </div>
                                             )}
                                         </td>
+
                                     </tr>
                                 ))}
                             </tbody>
@@ -199,10 +228,10 @@ function Inventario() {
 
                     {editProduct && (
                         <div className="edit-product-modal">
-                            <div className="modal-content">
+                            <div className="modal-content1">
                                 <h2>Editar Producto</h2>
                                 <input type="file" multiple onChange={handleImageChange} className="file-input" />
-                                {editProduct.images && editProduct.images.length > 0 && (
+                                {editProduct.images && (
                                     <div className="image-preview-container">
                                         {editProduct.images.map((image, index) => (
                                             <div key={index} className="image-preview">
@@ -211,11 +240,19 @@ function Inventario() {
                                                     alt={`Imagen ${index}`}
                                                     className="preview-image"
                                                 />
-                                                <button className="delete-image-btn" onClick={() => handleImageDelete(image)}>Eliminar</button>
+                                                <button className="delete-image-btn" onClick={() => handleImageDelete(image)}><i className="fas fa-trash"></i></button>
+                                            </div>
+                                        ))}
+
+                                        {/* Espacios vacíos si hay menos de 5 imágenes */}
+                                        {Array.from({ length: 5 - editProduct.images.length }).map((_, index) => (
+                                            <div key={index} className="image-preview empty-slot">
+                                                <p>Espacio vacío</p>
                                             </div>
                                         ))}
                                     </div>
                                 )}
+
 
                                 <input
                                     type="text"
@@ -257,8 +294,8 @@ function Inventario() {
                                 </select>
 
                                 <div className="modal-actions">
-                                <button className="update-btn" onClick={handleEditProduct}>Guardar Cambios</button>
-                                <button className="cancel-btn" onClick={() => setEditProduct(null)}>Cancelar</button>
+                                    <button className="update-btn" onClick={handleEditProduct} disabled={isUpdating}>{isUpdating ? 'Actualizando...' : 'Actualizar Producto'}</button>
+                                    <button className="cancel-btn" onClick={() => setEditProduct(null)}>Cancelar</button>
                                 </div>
                             </div>
                         </div>

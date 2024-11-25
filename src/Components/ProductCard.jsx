@@ -1,20 +1,24 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { FaExclamationTriangle } from 'react-icons/fa';
-import StarRating from './StarRating'; // Importamos el componente de calificación
-import '../Css/ProductCard.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { CartContext } from '../context/CartContext';  // Asegúrate de tener el CartContext disponible
-import { getUser } from '../api/auth'; // Importa la función para obtener el usuario
-import { API_URL } from '../config'; // Asegúrate de usar la ruta correcta
+import { CartContext } from '../context/CartContext';
+import { getUser } from '../api/auth';
+import { API_URL } from '../config';
+import { Modal, Button, Form } from 'react-bootstrap';
+import Carousel from 'react-bootstrap/Carousel';
+import '../Css/ProductCard.css';
 
 const ProductCard = ({ product }) => {
-    const [rating, setRating] = useState(5); // Estado para manejar la calificación
-    const [userId, setUserId] = useState(null); // Estado para manejar el userId
-    const [loading, setLoading] = useState(true); // Estado de carga
-    const [error, setError] = useState(null); // Estado para manejar errores
-    const { addToCart } = useContext(CartContext);  // Accedemos al contexto del carrito
+    const [userId, setUserId] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { addToCart } = useContext(CartContext);
     const navigate = useNavigate();
+
+    const [showModal, setShowModal] = useState(false);
+    const [claim, setClaim] = useState('');
+    const [notification, setNotification] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -31,29 +35,47 @@ const ProductCard = ({ product }) => {
         fetchUser();
     }, []);
 
-    // Manejar la acción de hacer clic en el producto
     const handleClick = () => {
         navigate(`/product/${product._id}`);
     };
 
-    // Manejar la acción de agregar al carrito
     const handleAddToCart = async (e) => {
-        e.stopPropagation(); // Para evitar que el click en el botón redirija a la página del producto
-        if (loading) return; // Espera a que el usuario esté cargado
+        e.stopPropagation();
+        if (loading) return;
         if (!userId) {
-            alert('User not authenticated');
+            alert('Usuario no autenticado');
             return;
         }
         try {
             const response = await axios.post(`${API_URL}/api/cart/add`, {
                 userId,
                 productId: product._id,
-                quantity: 1,  // Puedes dejar que el usuario elija la cantidad más adelante
+                quantity: 1,
             });
-            addToCart(response.data);  // Actualiza el estado del carrito global
-            console.log('Producto añadido al carrito');
+            addToCart(response.data);
+            setNotification(true);
+            setTimeout(() => setNotification(false), 3000); // Ocultar después de 3 segundos
         } catch (error) {
             console.error('Error al añadir el producto al carrito:', error.response ? error.response.data : error.message);
+        }
+    };
+
+    const handleShowModal = () => setShowModal(true);
+    const handleCloseModal = () => setShowModal(false);
+
+    const handleClaimSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post(`${API_URL}/api/claims`, {
+                userId,
+                productId: product._id,
+                claim,
+            });
+            alert('Reclamación enviada con éxito.');
+            setClaim('');
+            handleCloseModal();
+        } catch (error) {
+            console.error('Error al enviar la reclamación:', error);
         }
     };
 
@@ -61,42 +83,55 @@ const ProductCard = ({ product }) => {
     if (error) return <p>Error: {error}</p>;
 
     return (
-        <div className="product-card" onClick={handleClick}>
-            {/* Icono de advertencia en la esquina superior derecha */}
-            <div className="warning-icon">
-                <FaExclamationTriangle color="red" size={20} />
-            </div>
-
-            {/* Imagen del producto */}
+        <div className="product-card" style={{ cursor: 'pointer' }}>
             <div className="image-container">
-                {product.images[0] && (
-                    <img
-                        src={product.images[0]}
-                        alt={product.name}
-                        className="product-image"
-                    />
+                <Carousel className="carousel">
+                    {product.images && product.images.length > 0 ? (
+                        product.images.map((image, index) => (
+                            <Carousel.Item key={index} className="carousel-item">
+                                <div className="image-container">
+                                    <img
+                                        src={image}
+                                        alt={product.name}
+                                        className="product-image"
+                                    />
+                                </div>
+                            </Carousel.Item>
+                        ))
+                    ) : (
+                        <Carousel.Item className="carousel-item">
+                            <div className="image-container">
+                                <img
+                                    src="https://via.placeholder.com/200"
+                                    alt="Imagen no disponible"
+                                    className="product-image"
+                                />
+                            </div>
+                        </Carousel.Item>
+                    )}
+                </Carousel>
+
+
+
+                {notification && (
+                    <div className="notification">Producto Añadido</div>
                 )}
             </div>
-
-            {/* Información del producto */}
-            <div className="product-info">
-                <h2 className="product-title">{product.name}</h2>
-                <p className="product-price">Precio: ${product.price}</p>
-
-                {/* Componente de calificación modificable */}
-                <div className="product-rating">
-                    <StarRating rating={rating} setRating={setRating} />
-                    <span>({rating}/5)</span>
+            <div className="product-details" onClick={handleClick}>
+                <h5 className="product-name">{product.name}</h5>
+                <div className="product-footer">
+                    <p className="product-price">Precio: ${product.price}</p>
+                    <Button
+                        variant="success" // Cambiado a verde
+                        onClick={handleAddToCart}
+                        className="add-to-cart-button"
+                    >
+                        Agregar al carrito
+                    </Button>
                 </div>
-
-                {/* Botón de agregar al carrito */}
-                <button className="add-to-cart-btn" onClick={handleAddToCart}>
-                    Agregar al carrito
-                </button>
             </div>
         </div>
     );
 };
 
 export default ProductCard;
-

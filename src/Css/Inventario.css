@@ -1,173 +1,239 @@
-/* Contenedor principal */
 .inventory-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
     font-family: 'Arial', sans-serif;
-    background-color: #f9f9f9; /* Fondo ligero para contraste */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra suave */
-    border-radius: 8px; /* Bordes redondeados */
-}
-
-/* Encabezados */
-h1, h2 {
+    background-color: #f5f5f5;
     color: #333;
-    margin-bottom: 20px;
-    font-weight: bold; /* Negrita para encabezados */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+
 }
 
-/* Mensajes de carga y alerta */
-.loading, .message {
+.inventory-content {
+    width: 100%;
+    
+}
+
+.inventory-container h1 {
+    color: #4CAF50;
     text-align: center;
-    margin: 20px 0;
-    font-style: italic;
-    color: #555; /* Color más suave */
 }
 
-/* Botón para agregar productos */
 .add-product-btn {
-    background-color: #28a745; /* Verde más brillante */
+    background-color: #4CAF50;
     color: white;
-    padding: 12px 24px; /* Mayor espacio */
+    padding: 10px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 18px; /* Texto más grande */
-    transition: background-color 0.3s ease; /* Transición suave */
-    margin-bottom: 20px;
+    font-size: 16px;
 }
 
 .add-product-btn:hover {
-    background-color: #218838; /* Verde más oscuro en hover */
+    background-color: #45a049;
 }
 
-/* Contenedor de tabla */
-.table-container {
-    overflow-x: auto; /* Habilita el desplazamiento horizontal */
-}
-
-/* Tabla de productos */
 .product-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra suave para la tabla */
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.product-table th, .product-table td {
-    border: 1px solid #ddd;
+.product-table th,
+.product-table td {
     padding: 12px;
-    text-align: left;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
 }
 
-/* Encabezado de la tabla */
 .product-table th {
-    background-color: #e9ecef; /* Fondo gris claro */
+    background-color: #4CAF50;
+    color: white;
     font-weight: bold;
 }
 
-/* Filas alternas */
-.product-table tr:nth-child(even) {
-    background-color: #f2f2f2; /* Color de fondo claro */
+.product-table tbody tr:hover {
+    background-color: #f1f1f1;
 }
 
-/* Efecto hover en filas */
-.product-table tr:hover {
-    background-color: #f0f8ff; /* Color de fondo claro al pasar el ratón */
-}
-
-/* Imagen de producto */
 .product-image1 {
-    width: 100px;
-    height: 100px;
+    width: 150px;
+    height: 150px;
     object-fit: cover;
-    border-radius: 5px;
+    border-radius: 10%;
+    margin: 0 auto;
 }
 
-/* Botones de acción */
-.action-buttons {
+.status-disponible {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.status-surtir {
+    color: #FFC107;
+    font-weight: bold;
+}
+
+.status-sin-stock {
+    color: #F44336;
+    font-weight: bold;
+}
+
+.action-buttons1 {
     display: flex;
-    gap: 10px;
+    gap: 30px;
+    justify-content: center;
 }
 
-.edit-btn, .delete-btn {
-    padding: 6px 12px; /* Espaciado más cómodo */
+.action-buttons1 .edit-btn,
+.action-buttons1 .delete-btn {
+    background: none;
     border: none;
-    border-radius: 3px;
     cursor: pointer;
-    transition: background-color 0.3s ease; /* Transición suave */
+    font-size: 18px;
+    color: #4CAF50;
+    transition: color 0.2s ease;
 }
 
-/* Botón de editar */
-.edit-btn {
-    background-color: #007bff; /* Azul más brillante */
-    color: white;
+.action-buttons1 .delete-btn {
+    color: #F44336;
 }
 
-.edit-btn:hover {
-    background-color: #0056b3; /* Azul oscuro en hover */
+.action-buttons1 .edit-btn:hover {
+    color: #45a049;
 }
 
-/* Botón de eliminar */
-.delete-btn {
-    background-color: #dc3545; /* Rojo más brillante */
-    color: white;
+.action-buttons1 .delete-btn:hover {
+    color: #D32F2F;
 }
 
-.delete-btn:hover {
-    background-color: #c82333; /* Rojo oscuro en hover */
+.message {
+    text-align: center;
+    color: #4CAF50;
+    font-size: 18px;
+    margin-bottom: 10px;
 }
 
-/* Modal para editar producto */
+/* Contenedor principal del modal */
 .edit-product-modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); /* Fondo más oscuro */
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 /* Contenido del modal */
-.modal-content {
-    background-color: white;
-    padding: 30px;
-    border-radius: 8px; /* Bordes redondeados */
+.modal-content1 {
     width: 90%;
-    max-width: 500px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Sombra suave */
+    max-width: 600px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    position: relative;
+    animation: slideDown 0.3s ease-out;
+    background-color: #ffffff;
+    z-index: 1000;
 }
 
-/* Campos de entrada */
-.file-input, .edit-input, .edit-select {
+/* Título */
+.modal-content h2 {
+    font-size: 24px;
+    color: #4CAF50;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Input general */
+.edit-input {
     width: 100%;
-    padding: 12px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc; /* Color de borde más suave */
-    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
 }
 
-/* Contenedor de vista previa de imagen */
+/* Select */
+.edit-input select {
+    font-size: 16px;
+    border: none;
+    outline: none;
+}
+
+/* Botones de acciones */
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.update-btn,
+.cancel-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.update-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.update-btn:hover {
+    background-color: #45a049;
+}
+
+.cancel-btn {
+    background-color: #F44336;
+    color: white;
+}
+
+.cancel-btn:hover {
+    background-color: #D32F2F;
+}
+
+/* Contenedor de previsualización de imágenes */
 .image-preview-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 15px;
+    margin: 20px 0;
+    justify-content: center;
 }
 
-/* Imagen de vista previa */
+/* Cada imagen */
 .image-preview {
     position: relative;
-}
-
-.preview-image {
     width: 100px;
     height: 100px;
-    object-fit: cover;
+    border: 1px solid #ccc;
     border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: #f9f9f9;
+}
+
+/* Imagen */
+.preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /* Botón para eliminar imagen */
@@ -175,81 +241,93 @@ h1, h2 {
     position: absolute;
     top: 5px;
     right: 5px;
-    background-color: rgba(255, 0, 0, 0.8);
-    color: white;
+    background-color: #F44336;
     border: none;
+    color: white;
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    font-size: 12px;
+    width: 25px;
+    height: 25px;
     cursor: pointer;
-}
-
-/* Acciones del modal */
-.modal-actions {
+    font-size: 14px;
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Botones de actualización y cancelación */
-.update-btn, .cancel-btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease; /* Transición suave */
+.delete-image-btn:hover {
+    background-color: #D32F2F;
 }
 
-/* Botón de actualización */
-.update-btn {
-    background-color: #28a745; /* Verde más brillante */
-    color: white;
+/* Espacios vacíos */
+.image-preview.empty-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    font-size: 14px;
+    background-color: #f1f1f1;
 }
 
-.update-btn:hover {
-    background-color: #218838; /* Verde oscuro en hover */
-}
-
-/* Botón de cancelación */
-.cancel-btn {
-    background-color: #dc3545; /* Rojo más brillante */
-    color: white;
-}
-
-.cancel-btn:hover {
-    background-color: #c82333; /* Rojo oscuro en hover */
-}
-
-/* Estados de disponibilidad */
-.status-disponible {
-    color: green; /* Verde para "DISPONIBLE" */
-    font-weight: bold; /* Negrita para mejor visibilidad */
-}
-
-.status-surtir {
-    color: #ffc107; /* Amarillo para "SURTIR" */
-    font-weight: bold; /* Negrita para mejor visibilidad */
-}
-
-.status-sin-stock {
-    color: red; /* Rojo para "SIN STOCK" */
-    font-weight: bold; /* Negrita para mejor visibilidad */
-}
-
-/* Diseño responsive */
-@media (max-width: 768px) {
-    .product-table {
-        font-size: 14px; /* Fuente más pequeña en dispositivos móviles */
+/* Animación */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
     }
-
-    .product-image {
-        width: 50px; /* Tamaño más pequeño para imágenes */
-        height: 50px;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
+}
 
-    .action-buttons {
-        flex-direction: column; /* Botones apilados en dispositivos móviles */
+/* Spinner de carga */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-dot {
+    width: 10px;
+    height: 10px;
+    margin: 0 5px;
+    background-color: #4CAF50;
+    border-radius: 50%;
+    animation: loading 1s infinite;
+}
+
+.loading-dot:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.loading-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes loading {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.5);
+    }
+    100% {
+        transform: scale(1);
     }
 }

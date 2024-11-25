@@ -34,13 +34,25 @@ export const getProductsBySeller = async () => {
     }
 };
 
-// Obtener un producto por ID
-export const getProduct = async (id) => {
+// Obtener productos por categoría
+export const getProductsByCategory = async (categoryId) => {
     try {
-        const response = await axios.get(`${API_URL}/api/products/${id}`);
+        const response = await axios.get(`${API_URL}/api/products/category/${categoryId}`, getConfig());
         return response.data; // Devuelve los datos de la respuesta
     } catch (error) {
-        console.error(`Error fetching product ${id}:`, error.message);
+        console.error(`Error fetching products for category ${categoryId}:`, error.message);
+        throw error; // Lanza el error para manejarlo en la llamada
+    }
+};
+
+
+// Obtener un producto por ID
+export const getProduct = async (productId) => { // Cambié 'id' a 'productId'
+    try {
+        const response = await axios.get(`${API_URL}/api/products/${productId}`);
+        return response.data; // Devuelve los datos de la respuesta
+    } catch (error) {
+        console.error(`Error fetching product ${productId}:`, error.message);
         throw error; // Lanza el error para manejarlo en la llamada
     }
 };
@@ -57,34 +69,45 @@ export const createProduct = async (formData) => {
 };
 
 // Actualizar un producto
-export const updateProduct = async (id, formData) => {
+export const updateProduct = async (productId, formData) => { // Cambié 'id' a 'productId'
     try {
-        const response = await axios.put(`${API_URL}/api/products/${id}`, formData, getConfig(true));
+        const response = await axios.put(`${API_URL}/api/products/${productId}`, formData, getConfig(true));
         return response.data; // Devuelve los datos de la respuesta
     } catch (error) {
-        console.error(`Error updating product ${id}:`, error.response ? error.response.data : error.message);
+        console.error(`Error updating product ${productId}:`, error.response ? error.response.data : error.message);
         throw error; // Lanza el error para manejarlo en la llamada
     }
 };
 
 // Actualizar el stock de un producto
-export const updateProductStock = async (productId, status, quantity) => {
+export const updateProductStock = async (productId, newStatus, quantity) => {
     try {
-        const response = await axios.put(`${API_URL}/api/products/${productId}/stock`, { status, quantity });
+        // Verificar que los parámetros sean válidos
+        if (!newStatus || !quantity || isNaN(quantity) || quantity <= 0) {
+            throw new Error("Los parámetros no son válidos.");
+        }
+
+        // Enviar la solicitud PUT con los datos necesarios
+        const response = await axios.put(`${API_URL}/api/products/${productId}/stock`, { newStatus, quantity });
+
+        // Devolver la respuesta
         return response.data; // Devuelve los datos de la respuesta
     } catch (error) {
-        console.error(`Error updating stock for product ${productId}:`, error.response ? error.response.data : error.message);
+        // Manejar errores de manera más específica
+        console.error(`Error actualizando el stock del producto ${productId}:`, error.response ? error.response.data : error.message);
         throw error; // Lanza el error para manejarlo en la llamada
     }
 };
 
+
+
 // Eliminar un producto
-export const deleteProduct = async (id) => {
+export const deleteProduct = async (productId) => { // Cambié 'id' a 'productId'
     try {
-        const response = await axios.delete(`${API_URL}/api/products/${id}`, getConfig());
+        const response = await axios.delete(`${API_URL}/api/products/${productId}`, getConfig());
         return response.data; // Devuelve los datos de la respuesta
     } catch (error) {
-        console.error(`Error deleting product ${id}:`, error.message);
+        console.error(`Error deleting product ${productId}:`, error.message);
         throw error; // Lanza el error para manejarlo en la llamada
     }
 };

@@ -1,179 +1,164 @@
-import React, { useEffect, useState } from 'react';
-import { getOrdersByUser, submitReview, submitRating } from '../../api/order'; // Asegúrate de tener las funciones adecuadas en tu API
+import React, { useEffect, useState, useRef } from 'react';
+import { getOrdersByBuyer } from '../../api/order';
 import { getUser } from '../../api/auth';
+import '../../Css/Historial.css';
+import Navbar from '../../Components/NavBar';
 
 const Historial = () => {
     const [orders, setOrders] = useState([]);
     const [userId, setUserId] = useState('');
     const [error, setError] = useState('');
-    const [reviews, setReviews] = useState({}); // Para guardar calificaciones y comentarios
-    const [ratings, setRatings] = useState({}); // Para guardar solo calificaciones
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false); // Control del estado de la modal
 
-    const fetchOrdersByUser = async () => {
+    const fetchOrdersByBuyer = async () => {
+        setError(''); // Limpiar cualquier error previo
+        setLoading(true); // Activar estado de carga
+
         try {
             const user = await getUser();
             setUserId(user._id);
-            
-            const fetchedOrders = await getOrdersByUser(user._id); // Obtiene las órdenes del usuario
-            setOrders(fetchedOrders);
-            initializeReviews(fetchedOrders); // Inicializa el estado de las revisiones
-            initializeRatings(fetchedOrders); // Inicializa el estado de las calificaciones
+
+            const fetchedOrders = await getOrdersByBuyer(user._id);
+            if (fetchedOrders.length === 0) {
+                setError('No has realizado ninguna compra.');
+                setOrders([]);
+            } else {
+                setOrders(fetchedOrders);
+            }
         } catch (error) {
-            console.error('Error fetching user orders:', error);
-            setError(error.message);
-        }
-    };
-
-    const initializeReviews = (fetchedOrders) => {
-        const initialReviews = {};
-        fetchedOrders.forEach(order => {
-            order.items.forEach(item => {
-                initialReviews[item._id] = { rating: '', comment: '' }; // Inicializa el estado de las revisiones
-            });
-        });
-        setReviews(initialReviews);
-    };
-
-    const initializeRatings = (fetchedOrders) => {
-        const initialRatings = {};
-        fetchedOrders.forEach(order => {
-            order.items.forEach(item => {
-                initialRatings[item._id] = ''; // Inicializa el estado de las calificaciones
-            });
-        });
-        setRatings(initialRatings);
-    };
-
-    const handleReviewSubmit = async (orderId, itemId) => {
-        const { rating, comment } = reviews[itemId] || {};
-
-        if (!rating || !comment) {
-            alert('Por favor, completa ambos campos antes de enviar la revisión.');
-            return;
-        }
-
-        try {
-            await submitReview(orderId, itemId, { rating, comment });
-            alert('Revisión enviada con éxito.');
-            // Resetea la revisión para el producto
-            setReviews(prevReviews => ({
-                ...prevReviews,
-                [itemId]: { rating: '', comment: '' },
-            }));
-            fetchOrdersByUser(); // Recarga las órdenes para mostrar la nueva revisión
-        } catch (error) {
-            console.error('Error submitting review:', error);
-            setError(error.message);
-        }
-    };
-
-    const handleRatingSubmit = async (orderId, itemId) => {
-        const rating = ratings[itemId];
-
-        if (!rating) {
-            alert('Por favor, selecciona una calificación antes de enviar.');
-            return;
-        }
-
-        try {
-            await submitRating(orderId, itemId, { rating });
-            alert('Calificación enviada con éxito.');
-            // Resetea la calificación para el producto
-            setRatings(prevRatings => ({
-                ...prevRatings,
-                [itemId]: '',
-            }));
-            fetchOrdersByUser(); // Recarga las órdenes para mostrar la nueva calificación
-        } catch (error) {
-            console.error('Error submitting rating:', error);
-            setError(error.message);
+            console.error('Error al obtener las órdenes:', error);
+            setError('Hubo un problema al obtener las órdenes.');
+        } finally {
+            setLoading(false); // Desactivar estado de carga
         }
     };
 
     useEffect(() => {
-        fetchOrdersByUser();
+        fetchOrdersByBuyer();
     }, []);
 
+    const handleViewOrder = (order) => {
+        setSelectedOrder(order);
+        setIsModalOpen(true); // Abre el modal
+    };
+
+    const handleCloseOrderDetails = () => {
+        setIsModalOpen(false); // Cierra el modal
+        setSelectedOrder(null);
+    };
+
+    const calcularTotalOrden = (items) => {
+        return items.reduce((total, item) => {
+            const price = item.unit_price || 0;
+            const quantity = item.quantity || 0;
+            return total + (price * quantity);
+        }, 0);
+    };
+
+    const renderOrderItems = (items) => {
+        return items.map((item) => (
+            <tr key={item._id}>
+                <td>{item.title}</td>
+                <td>${item.unit_price}</td>
+                <td>{item.quantity}</td>
+                <td>${(item.unit_price * item.quantity).toFixed(2)}</td>
+            </tr>
+        ));
+    };
+
     return (
-        <div>
-            <h1>Historial de Compras</h1>
-            {error && <p>{error}</p>}
-            {orders.length === 0 ? (
-                <p>No has realizado ninguna compra.</p>
-            ) : (
-                <div>
-                    <table className="historial-table">
-                        <thead>
-                            <tr>
-                                <th>Fecha de Orden</th>
-                                <th>Artículo</th>
-                                <th>Precio Unitario</th>
-                                <th>Cantidad</th>
-                                <th>Total</th>
-                                <th>Calificación</th>
-                                <th>Comentario</th>
-                                <th>Enviar Revisión</th>
-                                <th>Enviar Calificación</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {orders.map(order => (
-                                order.items.map(item => (
-                                    <tr key={item._id}>
-                                        <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                                        <td>{item.title}</td>
-                                        <td>${item.unit_price.toFixed(2)}</td>
-                                        <td>{item.quantity}</td>
-                                        <td>${(item.unit_price * item.quantity).toFixed(2)}</td>
-                                        <td>
-                                            <select
-                                                value={ratings[item._id] || ''}
-                                                onChange={(e) => setRatings(prev => ({
-                                                    ...prev,
-                                                    [item._id]: e.target.value,
-                                                }))}
-                                            >
-                                                <option value="">Selecciona una calificación</option>
-                                                <option value="1">1</option>
-                                                <option value="2">2</option>
-                                                <option value="3">3</option>
-                                                <option value="4">4</option>
-                                                <option value="5">5</option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="text"
-                                                placeholder="Comentario"
-                                                value={reviews[item._id]?.comment || ''}
-                                                onChange={(e) => setReviews(prev => ({
-                                                    ...prev,
-                                                    [item._id]: {
-                                                        ...prev[item._id],
-                                                        comment: e.target.value,
-                                                    },
-                                                }))}
-                                            />
-                                        </td>
-                                        <td>
-                                            <button onClick={() => handleReviewSubmit(order._id, item._id)}>
-                                                Enviar Revisión
-                                            </button>
-                                        </td>
-                                        <td>
-                                            <button onClick={() => handleRatingSubmit(order._id, item._id)}>
-                                                Enviar Calificación
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-        </div>
+        <>
+            <Navbar />
+            <div className="historial-container">
+                <h1>Historial de Compras</h1>
+
+                {loading ? (
+                    <div className="loading-container text-center">
+                        <div className="spinner"></div>
+                        <p>Cargando tus compras...</p>
+                    </div>
+                ) : (
+                    <>
+                        {error && (
+                            <div className="no-orders-message text-center">
+                                <span role="img" aria-label="sad face" style={{ fontSize: '50px' }}>😔</span>
+                                <p>{error}</p>
+                            </div>
+                        )}
+
+                        {orders.length === 0 && !error ? (
+                            <div className="no-orders-message text-center">
+                                <span role="img" aria-label="sad face" style={{ fontSize: '50px' }}>😔</span>
+                                <p>No has realizado ninguna compra.</p>
+                            </div>
+                        ) : (
+                            <div>
+                                <table className="historial-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha de Orden</th>
+                                            <th>Método de Pago</th>
+                                            <th>Total</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {orders.map(order => (
+                                            <tr key={order._id}>
+                                                <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                                                <td>{order.paymentMethod}</td>
+                                                <td>${calcularTotalOrden(order.items).toFixed(2)}</td>
+                                                <td>
+                                                    <button className="btn-view-order" onClick={() => handleViewOrder(order)}>
+                                                        Ver Orden
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                {/* Modal de detalles de la orden */}
+                                <div className={`modal2 ${isModalOpen ? 'open' : ''}`}>
+                                    <div className="modal-content2">
+                                        <h2>Detalles de la Orden</h2>
+                                        {selectedOrder ? (
+                                            <>
+                                                <table className="order-items-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Artículo</th>
+                                                            <th>Precio Unitario</th>
+                                                            <th>Cantidad</th>
+                                                            <th>Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {renderOrderItems(selectedOrder.items)}
+                                                    </tbody>
+                                                </table>
+                                                <div className="order-total">
+                                                    <p>Total de la Orden: ${calcularTotalOrden(selectedOrder.items).toFixed(2)}</p>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <p>Cargando detalles de la orden...</p>
+                                        )}
+                                        <button className="close-btn" onClick={handleCloseOrderDetails}>
+                                            Cerrar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+        </>
     );
-}
+};
+
 
 export default Historial;

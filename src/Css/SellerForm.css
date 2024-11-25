@@ -1,0 +1,19 @@
+.seller-container {
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    width: 80%;
+    padding: 30px;
+    height: 80vh;
+}
+
+.seller-container h1 {
+    text-align: center;
+    font-weight: bold;
+    font-size: 30px;
+}
+
+@media (max-width: 768px) {
+    .seller-container {
+        width: 100%;
+        padding: 20px;
+    }
+}

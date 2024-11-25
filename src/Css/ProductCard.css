@@ -1,98 +1,105 @@
-/* src/components/ProductCard.css */
 .product-card {
-    position: relative;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 20px;
-    max-width: 250px;
-    text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease-in-out;
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    background-color: #fff;
 }
 
 .product-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Icono de advertencia */
+.image-container {
+    position: relative;
+    width: 100%;
+    height: 210px; /* Altura fija para el contenedor */
+    overflow: hidden;
+    background-color: #f4f4f4; /* Fondo para imágenes vacías */
+    display: flex; /* Usar flexbox para alinear las imágenes */
+    justify-content: center; /* Centrar horizontalmente */
+    align-items: center; /* Centrar verticalmente */
+}
+
+.product-image {
+    width: 500px; /* La imagen no excede el ancho del contenedor */
+    height: 100%; /* La imagen no excede la altura del contenedor */
+    object-fit: contain; /* Asegura que toda la imagen sea visible */
+}
+
+
+.carousel {
+    height: 210px; /* Fija la altura del carrusel */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.carousel-item {
+    height: 100%; /* Asegura que cada elemento del carrusel use el espacio completo */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+
+
+.product-image:hover {
+    transform: scale(1.05); /* Efecto de zoom al pasar el mouse */
+}
+
+
+.product-details {
+    padding: 1rem;
+    flex-grow: 1;
+}
+
+.product-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    word-wrap: break-word; /* Evitar desbordamiento en nombres largos */
+}
+
+.product-price {
+    color: #16a34a;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.add-to-cart-button {
+    background-color: #28a745;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.add-to-cart-button:hover {
+    background-color: #218838;
+}
+
 .warning-icon {
     position: absolute;
     top: 10px;
     right: 10px;
-    color: red;
-    font-size: 20px;
-}
-
-/* Imagen del producto */
-.image-container {
-    width: 100%;
-    height: 200px; /* Ajustar altura fija */
-    overflow: hidden;
-    margin-bottom: 15px;
-}
-
-.product-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Asegura que la imagen cubra el contenedor sin deformarse */
-    border-radius: 8px;
-}
-
-/* Información del producto */
-.product-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-}
-
-.product-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #333;
-}
-
-.product-price {
-    font-size: 16px;
-    color: #555;
-    margin-bottom: 8px;
-}
-
-.product-rating {
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-}
-
-/* Estilo para estrellas */
-.star-rating {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 5px;
-}
-
-.star-rating .FaStar {
-    margin: 0 2px;
-}
-
-/* Botón de agregar al carrito */
-.add-to-cart-btn {
-    padding: 10px 20px;
-    background-color: #0a74da;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
     cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-    margin-top: auto; /* Asegura que el botón esté al final del contenedor */
 }
 
-.add-to-cart-btn:hover {
-    background-color: #005bb5;
+.notification {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(22, 163, 74, 0.9);
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
 }
+

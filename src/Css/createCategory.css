@@ -1,0 +1,89 @@
+.containerC {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.titleC {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.messageC {
+    text-align: center;
+    color: #ff4747;
+    margin-bottom: 20px;
+}
+
+.formC {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-groupC {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+labelC {
+    font-size: 14px;
+    color: #666;
+}
+
+.inputC, .textareaC {
+    padding: 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: border-color 0.3s ease;
+}
+
+.inputC:focus, .textareaC:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+.textareaC {
+    resize: vertical;
+    height: 100px;
+}
+
+.form-actionsC {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.btn-submitC, .btn-cancelC {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-submitC {
+    background-color: #4CAF50;
+    color: #fff;
+}
+
+.btn-submitC:hover {
+    background-color: #45a049;
+}
+
+.btn-cancelC {
+    background-color: #f44336;
+    color: #fff;
+}
+
+.btn-cancelC:hover {
+    background-color: #e53935;
+}

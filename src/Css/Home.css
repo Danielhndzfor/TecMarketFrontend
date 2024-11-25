@@ -22,22 +22,55 @@
     margin-top: 50px;
 }
 
-.pagination {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-}
-
-.pagination button {
-    padding: 10px;
-    margin: 0 5px;
-    border: none;
-    background-color: #007bff;
+.view-more-button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #007bff; /* Cambia el color según tu diseño */
     color: white;
+    border: none;
     border-radius: 5px;
+    font-size: 16px;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-.pagination button.active {
-    background-color: #0056b3;
+.view-more-button:hover {
+    background-color: #0056b3; /* Color al pasar el mouse */
 }
+
+.categories-wrapper {
+    overflow-x: auto; /* Habilitar el scroll horizontal */
+    padding-bottom: 10px; /* Espacio para evitar el solapamiento del scroll */
+}
+
+.categories-wrapper::-webkit-scrollbar {
+    height: 8px; /* Altura del scrollbar */
+}
+
+.categories-wrapper::-webkit-scrollbar-thumb {
+    background-color: #cccccc;
+    border-radius: 4px;
+}
+
+.categories-wrapper::-webkit-scrollbar-thumb:hover {
+    background-color: #999999;
+}
+
+.categories-content {
+    display: flex;
+    gap: 16px; /* Espaciado uniforme entre las categorías */
+}
+
+.category-item {
+    flex-shrink: 0; /* Evita que los elementos se reduzcan */
+    width: 150px; /* Tamaño fijo para todos los botones */
+    height: 100px; /* Altura uniforme */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 1rem;
+    border-radius: 8px;
+}
+

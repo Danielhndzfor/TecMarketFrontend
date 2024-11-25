@@ -1,77 +1,97 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // Usa tu AuthContext en lugar de manejar manualmente el token
+import { useAuth } from '../context/AuthContext'; // Usa tu AuthContext
+import { ChefHat, Coffee } from 'lucide-react';
 
 function Login() {
-    const [formData, setFormData] = useState({
-        email: '',
-        password: ''
-    });
-
-    const { login, user } = useAuth();  // Extraemos login y el usuario desde el AuthContext
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const { login, user } = useAuth();
     const navigate = useNavigate();
 
-    const { email, password } = formData;
-
-    // Efecto para redirigir si el usuario ya está autenticado
     useEffect(() => {
         if (user) {
-            navigate('/home');  // Si el usuario ya está autenticado, redirigir inmediatamente
+            navigate(user.role === 'admin' ? '/admin' : '/home');
         }
-    }, [user, navigate]);  // Dependencia del estado del usuario
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value
-        });
-    };
+    }, [user, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await login(email, password);  // Llamada al login del contexto
-            // Redirigir tras el login exitoso (esto ya está cubierto en el useEffect si el usuario cambia)
-        } catch (error) {
-            console.error('Error al iniciar sesión:', error);
-            alert('Error al iniciar sesión: ' + (error.response ? error.response.data.message : error.message));
+            await login(email, password);
+            setError('');
+            navigate(user.role === 'admin' ? '/admin' : '/home'); // Redirección aquí
+        } catch (err) {
+            console.error('Error al iniciar sesión:', err);
+            setError('Credenciales incorrectas o error al conectarse.');
         }
     };
 
     return (
-        <div>
-            <h1>Inicio de Sesión</h1>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="email">Correo Electrónico:</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={email}
-                        onChange={handleChange}
-                        required
-                    />
+        <div className="min-h-screen flex items-center justify-center bg-green-50">
+            <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+                <div className="flex items-center justify-center mb-6">
+                    <ChefHat className="h-12 w-12 text-green-600 mr-2" />
+                    <h1 className="text-3xl font-bold text-gray-800">Iniciar Sesión</h1>
                 </div>
-                <div>
-                    <label htmlFor="password">Contraseña:</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        value={password}
-                        onChange={handleChange}
-                        required
-                    />
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                            Correo Electrónico
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            placeholder="tu@email.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full px-3 py-2 border rounded-md"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                            Contraseña
+                        </label>
+                        <input
+                            id="password"
+                            type="password"
+                            placeholder="••••••••"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-3 py-2 border rounded-md"
+                        />
+                    </div>
+                    {error && <p className="text-red-500 text-sm">{error}</p>}
+                    <button
+                        type="submit"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-300"
+                    >
+                        Iniciar Sesión
+                    </button>
+                </form>
+                {/* <div className="mt-6 text-center">
+                    <a href="/forgot-password" className="text-green-600 hover:text-green-700 text-sm">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div> */}
+                <div className="mt-8 border-t pt-6">
+                    <p className="text-sm text-gray-600 text-center">¿No tienes una cuenta?</p>
+                    <a
+                        href="/register"
+                        className="w-full mt-2 block text-center border border-green-600 text-green-600 py-2 rounded-md hover:bg-green-50"
+                    >
+                        Regístrate
+                    </a>
                 </div>
-                <button type="submit">Iniciar Sesión</button>
-                <div>
-                    <p>¿No tienes una cuenta? <a href="/register">Regístrate</a></p>
+                <div className="mt-6 flex items-center justify-center text-green-700">
+                    <Coffee className="h-5 w-5 mr-2" />
+                    <span className="text-sm">Disfruta de la mejor experiencia</span>
                 </div>
-            </form>
+            </div>
         </div>
     );
 }
 
 export default Login;
+

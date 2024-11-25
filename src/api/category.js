@@ -14,7 +14,6 @@ const getConfig = () => ({
 // Obtener todas las categorías
 export const getCategories = async () => {
     try {
-        // Concatenar la ruta específica '/categories' a la URL base
         const response = await axios.get(`${API_URL}/api/categories`, getConfig());
         return response.data;
     } catch (error) {
@@ -22,6 +21,18 @@ export const getCategories = async () => {
         throw error;
     }
 };
+
+// Obtener una categoría por ID
+export const getCategoryById = async (id) => {
+    try {
+        const response = await axios.get(`${API_URL}/api/categories/${id}`, getConfig());
+        return response.data;
+    } catch (error) {
+        console.error('Error al obtener la categoría por ID:', error.response ? error.response.data : error.message);
+        throw error;
+    }
+};
+
 
 // Crear una nueva categoría
 export const createCategory = async (name, description) => {
@@ -35,13 +46,22 @@ export const createCategory = async (name, description) => {
 };
 
 // Actualizar una categoría
-export const updateCategory = async (id, name, description) => {
+export const updateCategory = async (categoryId, formData) => {
     try {
-        const response = await axios.put(`${API_URL}/api/categories/${id}`, { name, description }, getConfig());
+        // Verifica que ambos campos (name y description) estén presentes
+        if (!formData.name || !formData.description) {
+            alert('Todos los campos son requeridos.');
+            return;
+        }
+
+        // Realiza la solicitud PUT para actualizar la categoría
+        const response = await axios.put(`https://tec-market-backend.vercel.app/api/categories/${categoryId}`, formData);
+
+        // Si la solicitud es exitosa, devuelve la categoría actualizada
         return response.data;
     } catch (error) {
-        console.error('Error al actualizar la categoría:', error.response ? error.response.data : error.message);
-        throw error;
+        console.error('Error al actualizar la categoría:', error.response ? error.response.data : error);
+        alert('Error al actualizar la categoría');
     }
 };
 

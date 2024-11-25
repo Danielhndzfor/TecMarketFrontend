@@ -45,9 +45,14 @@ export const AuthProvider = ({ children }) => {
     
             // Actualiza el estado de autenticación
             setUser(user);
+
+            // Redirige a una ruta protegida si el role es admin y a otra si es vendedor o comprador
+            if (user.role === 'admin') {
+                window.location.href = '/admin'; // O la ruta protegida que desees
+            } else {
+                window.location.href = '/home'; // O la ruta protegida que desees
+            }
     
-            // Redirige a una ruta protegida tras el login
-            window.location.href = '/home'; // O la ruta protegida que desees
         } catch (error) {
             console.error('Error durante el login:', error.response?.data?.message || error.message);
             throw error;

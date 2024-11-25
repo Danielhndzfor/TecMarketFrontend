@@ -21,37 +21,61 @@ export const createOrder = async (orderData) => {
     }
 
     try {
-        const response = await axiosInstance.post('/orders', orderData);
-        return response.data;
+        const response = await axiosInstance.post('/orders/', orderData);
+        return response.data; // Retorna la orden creada
     } catch (error) {
         console.error('Error creating order:', error.response ? error.response.data : error.message);
         throw error;
     }
 };
 
-
 // Función para obtener todas las órdenes
 export const getAllOrders = async () => {
     try {
-        const response = await axiosInstance.get('/orders');
-        return response.data;
+        const response = await axiosInstance.get('/orders/all');
+        return response.data; // Retorna la lista de órdenes
     } catch (error) {
         console.error('Error fetching orders:', error.response ? error.response.data : error.message);
         throw error;
     }
 };
 
-
 // Función para obtener todas las órdenes de un vendedor
 export const getOrdersBySeller = async (sellerId) => {
     try {
-        const response = await axiosInstance.get(`/orders?sellerId=${sellerId}`);
+        const response = await axiosInstance.get(`/orders/seller/${sellerId}`);
+        
+        // Validación de datos (opcional)
+        if (!Array.isArray(response.data)) {
+            throw new Error('La respuesta no es un array de órdenes');
+        }
+        
         return response.data; // Asegúrate de que esto devuelva un array de órdenes
     } catch (error) {
         console.error('Error fetching seller orders:', error.response ? error.response.data : error.message);
-        throw error;
+        throw error; // Puedes lanzar el error para manejarlo en el componente que llama a esta función
     }
 };
+
+// Función para obtener todas las órdenes de un comprador específico
+export const getOrdersByBuyer = async (buyerId) => {
+    try {
+        const response = await axiosInstance.get(`/orders/buyer/${buyerId}`);
+        
+        // Verificar que la respuesta contiene la propiedad `data` como array
+        if (response.data && Array.isArray(response.data.data)) {
+            return response.data.data;
+        } else {
+            console.error('Formato inesperado de respuesta:', response.data);
+            return [];
+        }
+    } catch (error) {
+        console.error('Error al obtener las órdenes:', error);
+        throw error; // Re-lanzar el error para manejo global
+    }
+};
+
+
 
 // Función para obtener una orden por ID
 export const getOrderById = async (orderId) => {
@@ -75,8 +99,6 @@ export const updateItemStatus = async (orderId, itemId, newStatus) => {
     }
 };
 
-
-
 // Función para actualizar una orden completa
 export const updateOrder = async (orderId, updates) => {
     try {
@@ -98,3 +120,4 @@ export const deleteOrder = async (orderId) => {
         throw error;
     }
 };
+

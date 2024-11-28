@@ -1,7 +1,7 @@
 import { Line, Bar } from 'react-chartjs-2';
 import { Chart, registerables } from 'chart.js';
 
-// Register all necessary components, including scales
+// Registrar todos los componentes necesarios
 Chart.register(...registerables);
 
 const ComboChart = ({ data }) => {
@@ -15,16 +15,36 @@ const ComboChart = ({ data }) => {
     }));
 
     return (
-        <Line 
-            data={{ ...data, datasets: datasetsWithHighlight }} 
-            options={{
-                scales: {
-                    y: {
-                        beginAtZero: true,
+        <div style={{ height: '300px' }}> {/* Ajusta la altura aquí */}
+            <Bar 
+                data={{ ...data, datasets: datasetsWithHighlight }} 
+                options={{
+                    maintainAspectRatio: false, // Permitir personalización de la altura
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
                     },
-                },
-            }} 
-        />
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Productos',
+                            },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Cantidad',
+                            },
+                        },
+                    },
+                }} 
+            />
+        </div>
     );
 };
 

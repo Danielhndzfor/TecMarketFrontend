@@ -7,14 +7,14 @@ import { CartProvider } from './context/CartContext.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './global.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-
-
+import Footer from './Screens/Footer.jsx';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
       <AuthProvider>
         <CartProvider>
           <App />
+          <Footer />
         </CartProvider>
       </AuthProvider>
   </React.StrictMode>,

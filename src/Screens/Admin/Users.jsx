@@ -104,8 +104,8 @@ const Users = () => {
     return (
         <>
             <NavBar />
-            <div className="flex flex-col h-1 mt-10">
-                <div className="flex-grow container mx-auto mt-10">
+            <div className="flex flex-col ">
+                <div className="flex-grow container">
                     {/* Header Section */}
                     <div className="mb-4">
                         <h1 className="text-3xl font-light text-black-500 mb-2 text-center">Lista de Usuarios</h1>

@@ -82,15 +82,25 @@ export const getAllUsers = async () => {
 // 5. Actualizar datos de un usuario
 export const updateUser = async (userId, updatedData) => {
     const token = localStorage.getItem('token');
+
+    // Verifica que userId es un número válido, si es necesario
+    const numericUserId = parseInt(userId, 10);
+    if (isNaN(numericUserId)) {
+        throw new Error('ID de usuario no válido');
+    }
+
     try {
-        const response = await axios.put(`${API_URL}/api/auth/update-user/${userId}`, updatedData, {
+        // Realiza la solicitud PUT para actualizar el usuario
+        const response = await axios.put(`${API_URL}/api/auth/update-user/${numericUserId}`, updatedData, {
             headers: { Authorization: `Bearer ${token}` } // Incluye el token aquí
         });
         return response.data;
     } catch (error) {
+        // Maneja el error y lo lanza con un mensaje adecuado
         throw new Error(error.response?.data?.message || 'Error al actualizar el usuario');
     }
 };
+
 
 // Función para obtener el total de usuarios
 export const getTotalUsersCount = async () => {

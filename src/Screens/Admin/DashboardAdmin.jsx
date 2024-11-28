@@ -1,148 +1,157 @@
 import React, { useEffect, useState } from 'react';
-import { Bar, Doughnut } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import {
-    getTotalUsersCount,
-    getSellersCount,
-    getBuyersCount,
-    getUsersTodayCount,
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+} from 'chart.js';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+);
+
+import { 
+    getTotalUsersCount, 
+    getSellersCount, 
+    getBuyersCount, 
+    getUsersTodayCount 
 } from '../../api/auth';
+import { getProducts } from '../../api/products';
 import NavBar from '../../Components/NavBar';
 
 export default function DashboardAdmin() {
-    const [totalUsers, setTotalUsers] = useState(0);
-    const [sellersCount, setSellersCount] = useState(0);
-    const [buyersCount, setBuyersCount] = useState(0);
-    const [todayCount, setTodayCount] = useState(0);
+    const [dashboardData, setDashboardData] = useState({
+        totalUsers: 0,
+        sellersCount: 0,
+        buyersCount: 0,
+        todayCount: 0,
+        weeklyProductData: []
+    });
 
     useEffect(() => {
-        async function fetchData() {
+        const fetchDashboardData = async () => {
             try {
-                const totalUsers = await getTotalUsersCount();
-                const sellers = await getSellersCount();
-                const buyers = await getBuyersCount();
-                const today = await getUsersTodayCount();
+                const [totalUsers, sellers, buyers, today, productsData] = await Promise.all([
+                    getTotalUsersCount(),
+                    getSellersCount(),
+                    getBuyersCount(),
+                    getUsersTodayCount(),
+                    getProducts()
+                ]);
 
-                setTotalUsers(totalUsers);
-                setSellersCount(sellers);
-                setBuyersCount(buyers);
-                setTodayCount(today);
+                const productsCountBySeller = productsData.reduce((acc, product) => {
+                    if (!product.seller) return acc;
+                    const sellerName = `${product.seller.name} ${product.seller.firstName}`;
+                    acc[sellerName] = (acc[sellerName] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const weeklyProductData = Object.entries(productsCountBySeller).map(
+                    ([seller, count]) => ({ seller, count })
+                );
+
+                setDashboardData({
+                    totalUsers,
+                    sellersCount: sellers,
+                    buyersCount: buyers,
+                    todayCount: today,
+                    weeklyProductData
+                });
             } catch (error) {
-                console.error("Error al obtener datos del dashboard:", error);
+                console.error("Dashboard data fetch error:", error);
             }
-        }
-        fetchData();
+        };
+
+        fetchDashboardData();
     }, []);
 
-    const usersData = {
-        labels: ['Total Usuarios', 'Nuevos Hoy'],
-        datasets: [
-            {
-                label: 'Usuarios',
-                data: [totalUsers, todayCount],
-                backgroundColor: ['#4A90E2', '#50E3C2'],
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
             },
-        ],
+            title: {
+                display: true,
+                text: 'Productos Registrados por Vendedor',
+                font: {
+                    size: 20
+                }
+            },
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Número de Productos',
+                    font: {
+                        size: 14
+                    }
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Vendedores',
+                    font: {
+                        size: 14
+                    }
+                }
+            }
+        }
     };
 
-    const roleDistributionData = {
-        labels: ['Vendedores', 'Compradores'],
-        datasets: [
-            {
-                label: 'Distribución de Roles',
-                data: [sellersCount, buyersCount],
-                backgroundColor: ['#E94E77', '#4A90E2'],
-            },
-        ],
+    const productData = {
+        labels: dashboardData.weeklyProductData.map(entry => entry.seller),
+        datasets: [{
+            label: 'Productos Registrados',
+            data: dashboardData.weeklyProductData.map(entry => entry.count),
+            backgroundColor: '#4CAF50',
+        }],
     };
 
     return (
-        <>
+        <div className="flex flex-col min-h-screen bg-gray-100">
             <NavBar />
-            <div style={{ padding: '20px', backgroundColor: '#eef2f4', minHeight: '100vh' }}>
-                <h1 style={{ textAlign: 'center', marginBottom: '30px', color: '#333' }}>Dashboard Admin</h1>
-
-                {/* Cuadrados con estadísticas generales */}
-                <div style={infoBoxContainerStyle}>
-                    <InfoBox title="Total de Usuarios" value={totalUsers} />
-                    <InfoBox title="Nuevos Usuarios Hoy" value={todayCount} />
-                    <InfoBox title="Usuarios Compradores" value={buyersCount} />
-                    <InfoBox title="Usuarios Vendedores" value={sellersCount} />
+            <div className="flex-grow p-6">
+                <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">Dashboard Admin</h1>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                    <div className="bg-blue-500 text-white rounded-lg p-6 shadow-lg">
+                        <p className="text-lg opacity-75">Total de Usuarios</p>
+                        <p className="text-4xl font-bold">{dashboardData.totalUsers}</p>
+                    </div>
+                    <div className="bg-teal-500 text-white rounded-lg p-6 shadow-lg">
+                        <p className="text-lg opacity-75">Nuevos Usuarios Hoy</p>
+                        <p className="text-4xl font-bold">{dashboardData.todayCount}</p>
+                    </div>
+                    <div className="bg-pink-500 text-white rounded-lg p-6 shadow-lg">
+                        <p className="text-lg opacity-75">Usuarios Compradores</p>
+                        <p className="text-4xl font-bold">{dashboardData.buyersCount}</p>
+                    </div>
+                    <div className="bg-indigo-500 text-white rounded-lg p-6 shadow-lg">
+                        <p className="text-lg opacity-75">Usuarios Vendedores</p>
+                        <p className="text-4xl font-bold">{dashboardData.sellersCount}</p>
+                    </div>
                 </div>
 
-                <div style={cardContainerStyle}>
-                    {/* Gráfico de Usuarios Totales y Nuevos */}
-                    <div style={cardStyle}>
-                        <h3 style={cardTitleStyle}>Usuarios Totales y Nuevos</h3>
-                        <div style={{ ...chartContainerStyle, height: '400px' }}>
-                            <Bar data={usersData} options={{ responsive: true, maintainAspectRatio: false }} />
-                        </div>
-                    </div>
-
-                    {/* Distribución de Roles */}
-                    <div style={cardStyle}>
-                        <h3 style={cardTitleStyle}>Distribución de Usuarios</h3>
-                        <div style={{ ...chartContainerStyle, height: '400px' }}>
-                            <Doughnut data={roleDistributionData} options={{ responsive: true, maintainAspectRatio: false }} />
-                        </div>
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                    <div className="h-[calc(100vh-500px)]">
+                        <Bar data={productData} options={chartOptions} />
                     </div>
                 </div>
             </div>
-        </>
-    );
-}
-
-// Componente para cada cuadrado de estadísticas
-function InfoBox({ title, value }) {
-    return (
-        <div style={infoBoxStyle}>
-            <h4 style={{ fontSize: '1.8em' ,marginBottom: '15px', color: '#333' }}>{title}</h4>
-            <p style={{ fontSize: '5em', color: '#4A90E2' }}>{value}</p>
         </div>
     );
 }
-
-// Estilos
-const infoBoxContainerStyle = {
-    display: 'flex',
-    justifyContent: 'space-around',
-    marginBottom: '20px',
-};
-
-const infoBoxStyle = {
-    backgroundColor: '#fff',
-    padding: '20px',
-    borderRadius: '8px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    textAlign: 'center',
-    minWidth: '350px',
-    height: '220px',
-};
-
-const cardContainerStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    gap: '20px',
-    flexWrap: 'wrap',
-};
-
-const cardStyle = {
-    width: '48%',
-    backgroundColor: '#fff',
-    padding: '20px',
-    borderRadius: '12px',
-    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.1)',
-    textAlign: 'center',
-};
-
-const cardTitleStyle = {
-    marginBottom: '15px',
-    fontSize: '1.2em',
-    color: '#333',
-};
-
-const chartContainerStyle = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-};

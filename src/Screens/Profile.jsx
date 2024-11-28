@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { getUser } from '../api/auth'; // Asegúrate de que la ruta sea correcta
-import axios from 'axios';
-import { API_URL } from '../config'; // Asegúrate de usar la ruta correcta
+import { getUser, updateUser } from '../api/auth'; // Asegúrate de importar updateUser
 import { Container, Row, Col, Card, Button, Form, ListGroup } from 'react-bootstrap';
 import NavBar from '../Components/NavBar';
 import '../Css/Profile.css';
+import axios from 'axios';
 
 function Profile() {
     const [userData, setUserData] = useState({});
@@ -27,28 +26,23 @@ function Profile() {
     }, []);
 
     const handleUpdate = async () => {
-        try {
-            const response = await axios.put(`${API_URL}/api/auth/update-user/${userData._id}`, userData, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            setMessage(response.data.message);
-            setIsEditing(false); // Salir del modo de edición
-        } catch (error) {
-            console.error('Error al actualizar el perfil:', error.response?.data?.message || error.message);
-            setMessage('Error al actualizar el perfil.');
-        }
-    };
+    try {
+        const userId = userData.userId;  // Asegúrate de que el id esté correcto
+        const response = await axios.put(`http://localhost:5000/api/auth/update-user/${userId}`, userData);
+        setMessage(response.data.message);
+        setIsEditing(false); // Salir del modo de edición
+    } catch (error) {
+        console.error('Error al actualizar el perfil:', error.response?.data?.message || error.message);
+        setMessage('Error al actualizar el perfil.');
+    }
+};
+
+    
 
     const handleRevertToBuyer = async () => {
         if (confirmingRevert) {
             try {
-                const response = await axios.post(`${API_URL}/api/auth/soy-comprador/${userData._id}`, {}, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
+                const response = await updateUser({ ...userData, role: 'comprador' }); // Se asume que updateUser maneja la actualización de roles también
                 setUserData({ ...userData, role: 'comprador' }); // Actualizar el rol en el estado
                 setMessage('Has vuelto a ser comprador. Todos los datos de vendedor han sido eliminados.');
             } catch (error) {
@@ -226,6 +220,9 @@ function Profile() {
                                                 <ListGroup.Item>
                                                     <strong>CLABE:</strong> {userData.clabe}
                                                 </ListGroup.Item>
+                                                <ListGroup.Item>
+                                                    <strong>Categoría:</strong> {userData.category}
+                                                </ListGroup.Item>
                                             </>
                                         )}
                                     </ListGroup>
@@ -234,28 +231,19 @@ function Profile() {
                         </Card>
                     </Col>
                 </Row>
-                {userData.role === 'vendedor' && (
-                    <Row>
-                        <Col>
-                            <Card className="mt-3">
-                                <Card.Body>
-                                    <Card.Title>Eliminar Rol de Vendedor</Card.Title>
-                                    <Card.Text>
-                                        Al hacer esto, se eliminarán tus datos de venta, inventario y acceso como vendedor.
-                                    </Card.Text>
-                                    <Button variant="danger" onClick={handleRevertToBuyer}>
-                                        {confirmingRevert ? 'Confirmar' : 'Ya no quiero vender'}
-                                    </Button>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    </Row>
-                )}
-                {message && <div className="alert alert-info mt-3">{message}</div>}
+                <Row>
+                    <Col md={12} className="text-center mt-4">
+                        <Button variant="warning" onClick={handleRevertToBuyer}>
+                            {confirmingRevert ? '¿Estás seguro?' : 'Volver a comprador'}
+                        </Button>
+                        {message && <p>{message}</p>}
+                    </Col>
+                </Row>
             </Container>
         </>
     );
 }
 
 export default Profile;
+
 

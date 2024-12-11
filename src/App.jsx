@@ -20,6 +20,7 @@ import Users from './Screens/Admin/Users';
 import Orders from './Screens/Admin/Orders';
 import Categories from './Screens/Admin/Categories';
 import Productos from './Screens/Comprador/Productos';
+import CartPrueba from './Screens/Comprador/CartPrueba';
 
 import SellerForm from './Screens/Vendedor/Convertirse-vendedor';
 import Profile from './Screens/Profile';
@@ -34,6 +35,8 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/not-authorized" element={<NotAuthorized />} />
+
+        <Route path="/cart-prueba" element={<CartPrueba />} />  
 
         {/* Rutas para roles admin, vendedor y comprador */}
         <Route

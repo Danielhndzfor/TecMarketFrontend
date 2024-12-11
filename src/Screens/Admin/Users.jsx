@@ -50,45 +50,45 @@ const Users = () => {
 
     const handleDelete = (userId) => {
         console.log(`Eliminar usuario con ID: ${userId}`);
-        setFilteredBuyers(prev => prev.filter(user => user.userId !== userId));
-        setFilteredSellers(prev => prev.filter(user => user.userId !== userId));
+        setFilteredBuyers(prev => prev.filter(user => user._id !== userId));
+        setFilteredSellers(prev => prev.filter(user => user._id !== userId));
         setShowDeleteModal(false);
     };
 
     const handleEdit = (user) => {
-        setSelectedUser (user);
+        setSelectedUser(user);
         setConvertToSeller(user.role === 'vendedor'); // Establece el estado basado en el rol actual
         setShowEditModal(true);
     };
 
     const handleSaveChanges = async () => {
-        if (selectedUser ) {
+        if (selectedUser) {
             const updatedData = {
-                name: selectedUser .name,
-                firstName: selectedUser .firstName,
-                lastName: selectedUser .lastName,
-                email: selectedUser .email,
-                phoneNumber: selectedUser .phoneNumber,
+                name: selectedUser.name,
+                firstName: selectedUser.firstName,
+                lastName: selectedUser.lastName,
+                email: selectedUser.email,
+                phoneNumber: selectedUser.phoneNumber,
                 role: convertToSeller ? 'vendedor' : 'comprador',
-                businessName: convertToSeller ? selectedUser .businessName : undefined,
-                description: convertToSeller ? selectedUser .description : undefined,
-                clabe: convertToSeller ? selectedUser .clabe : undefined,
-                category: convertToSeller ? selectedUser .category : undefined,
+                businessName: convertToSeller ? selectedUser.businessName : undefined,
+                description: convertToSeller ? selectedUser.description : undefined,
+                clabe: convertToSeller ? selectedUser.clabe : undefined,
+                category: convertToSeller ? selectedUser.category : undefined,
             };
     
             try {
-                // Asegúrate de que el userId sea numérico
-                const userId = Number(selectedUser .userId);
-                if (isNaN(userId)) {
+                // Asegúrate de que el _id sea numérico
+                const userId = selectedUser._id;
+                if (!userId) {
                     throw new Error('ID de usuario no válido');
                 }
     
-                await updateUser (userId, updatedData);
+                await updateUser(userId, updatedData);
                 setShowEditModal(false);
     
                 // Actualiza la lista de usuarios después de la edición
                 const updatedUsers = users.map(user =>
-                    user.userId === userId ? { ...user, ...updatedData } : user
+                    user._id === userId ? { ...user, ...updatedData } : user
                 );
                 setUsers(updatedUsers);
                 setFilteredBuyers(updatedUsers.filter(user => user.role === 'comprador'));
@@ -104,7 +104,7 @@ const Users = () => {
     return (
         <>
             <NavBar />
-            <div className="flex flex-col ">
+            <div className="flex flex-col mb-10">
                 <div className="flex-grow container">
                     {/* Header Section */}
                     <div className="mb-4">
@@ -134,7 +134,7 @@ const Users = () => {
                     {filteredBuyers.length === 0 ? (
                         <p>No se encontraron compradores.</p>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto mt-3">
                             <table className="min-w-full border border-emerald-800">
                                 <thead>
                                     <tr className="bg-gray-950 text-emerald-300">
@@ -180,7 +180,7 @@ const Users = () => {
                     {filteredSellers.length === 0 ? (
                         <p>No se encontraron vendedores.</p>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto mt-3">
                             <table className="min-w-full border border-emerald-800">
                                 <thead>
                                     <tr className="bg-gray-950 text-emerald-300">

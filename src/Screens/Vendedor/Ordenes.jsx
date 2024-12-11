@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { getOrdersBySeller, updateItemStatus } from '../../api/order';
 import { getUser } from '../../api/auth';
 import { updateProductStock } from '../../api/products';
-import ComboChart from '../../Components/ComboChart';
 import '../../Css/Dashboard.css';
 import { FaUser } from 'react-icons/fa';
 
@@ -217,22 +216,6 @@ function Ordenes() {
         }
     };
 
-    const handlePreviousWeek = () => {
-        setCurrentWeekOffset(prev => prev - 1);
-    };
-
-    const handleNextWeek = () => {
-        setCurrentWeekOffset(prev => prev + 1);
-    };
-
-    const handleSearch = (e) => {
-        setSearchTerm(e.target.value);
-    };
-
-    const handleStatusFilter = (e) => {
-        setStatusFilter(e.target.value);
-    };
-
     const handleBuyerInfo = (buyer) => {
         setBuyerInfo(buyer);
     };
@@ -312,11 +295,21 @@ function Ordenes() {
                                                         value={item.status}
                                                         onChange={(e) => handleUpdateItemStatus(order._id, item._id, e.target.value)}
                                                     >
-                                                        <option value="pendiente">Pendiente</option>
-                                                        <option value="completado">Completado</option>
-                                                        <option value="cancelado">Cancelado</option>
+                                                        {item.status === "pendiente" ? (
+                                                            <>
+                                                                <option value="pendiente">Pendiente</option>
+                                                                <option value="completado">Completado</option>
+                                                                <option value="cancelado">Cancelado</option>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <option value="completado">Completado</option>
+                                                                <option value="cancelado">Cancelado</option>
+                                                            </>
+                                                        )}
                                                     </select>
                                                 </td>
+
                                                 <td className='user'>
                                                     <FaUser
                                                         className="user-icon"
@@ -332,15 +325,20 @@ function Ordenes() {
 
                     <div className="pagination">
                         {Array.from({ length: Math.ceil(orders.length / itemsPerPage) }, (_, index) => (
-                            <button key={index} onClick={() => setCurrentPage(index + 1)} className={currentPage === index + 1 ? 'active' : ''}>
+                            <button
+                                key={index}
+                                onClick={() => setCurrentPage(index + 1)}
+                                className={`pagination-button ${currentPage === index + 1 ? 'active' : ''}`}
+                            >
                                 {index + 1}
                             </button>
                         ))}
                     </div>
 
+
                     {buyerInfo && (
                         <div className="buyer-modal" backdrop={true} >
-                            <div className="modal-content">
+                            <div className="modal-contentD">
                                 <h2>Datos del Comprador</h2>
                                 <p>Nombre: {buyerInfo.name}</p>
                                 <p>Email: {buyerInfo.email}</p>

@@ -1,14 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { CartContext } from '../../context/CartContext';
-import { getCart, addToCart, removeFromCart, clearCart } from '../../api/cart';
+import { getCart, addToCart, removeFromCart, clearCart, decreaseQuantity, increaseQuantity } from '../../api/cart';
 import { getUser } from '../../api/auth';
 import { getProduct } from '../../api/products';
 import { createOrder } from '../../api/order';
 import { ShoppingCart, Trash2, Plus, Minus, CreditCard, DollarSign, ArrowLeft, CheckCircle } from 'lucide-react';
-import '../../Css/Cart.css';
+import { toast } from 'react-toastify';
 
 const Cart = () => {
     const { cart, setCart } = useContext(CartContext);
+    const [cartId, setCartId] = useState(null);
     const [userId, setUserId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -17,6 +18,8 @@ const Cart = () => {
     const [paymentMethod, setPaymentMethod] = useState('');
     const [orderNumber, setOrderNumber] = useState(null);
     const [debounceTimer, setDebounceTimer] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false); // Estado para controlar el modal
+    const [productToDelete, setProductToDelete] = useState(null); // Producto que se va a eliminar
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -39,20 +42,24 @@ const Cart = () => {
 
             try {
                 const data = await getCart(userId);
-                setCart(data || { items: [] });
+                if (data) {
+                    setCart(data);
+                    setCartId(data._id); // Guarda el cartId del carrito obtenido
 
-                if (data && data.items) {
                     const productPromises = data.items.map(async (item) => {
                         const product = await getProduct(item.product);
-                        // Asegúrate de que el vendedor esté incluido en el producto
                         return { ...item, product: { ...product, sellerId: item.seller } };
                     });
 
                     const productsDetails = await Promise.all(productPromises);
                     setProducts(productsDetails.reduce((acc, item) => {
-                        acc[item.product._id] = item.product; // Asegúrate de que el id del producto sea correcto
+                        acc[item.product._id] = item.product;
                         return acc;
                     }, {}));
+                } else {
+                    console.log('Carrito no encontrado, creando uno nuevo...');
+                    const newCart = await createCart(userId); // Crear un carrito si no existe
+                    setCartId(newCart._id); // Guarda el cartId del nuevo carrito
                 }
             } catch (error) {
                 console.error('Error fetching cart:', error.message);
@@ -64,73 +71,85 @@ const Cart = () => {
         fetchCart();
     }, [userId, setCart]);
 
-
-
-    // Remove item from cart
-    const handleRemove = async (productId) => {
-        if (window.confirm('¿Estás seguro de que deseas eliminar este producto del carrito?')) {
-            const cartId = cart.cartId; // Asegúrate de obtener el cartId del objeto del carrito
-            console.log('Valor de cartId:', cartId); // Para verificar el valor
-    
-            // Verifica que cartId sea un número y no undefined o null
-            if (typeof cartId !== 'number' || isNaN(cartId)) {
-                console.error('El cartId no es un valor válido');
-                return; // Maneja el error adecuadamente
-            }
-    
-            try {
-                // Llama a removeFromCart enviando userId, cartId y productId en el body
-                await removeFromCart(userId, productId, cartId); 
-                setCart((prevCart) => ({
-                    ...prevCart,
-                    items: prevCart.items.filter(item => item.product !== productId),
-                }));
-            } catch (error) {
-                console.error('Error removing item from cart:', error.message);
-            }
+    const handleIncrease = async (productId) => {
+        try {
+            const formattedCartId = cartId.toString();  // Convertir a string
+            const formattedProductId = productId.toString(); // Convertir a string
+            const updatedCart = await increaseQuantity(userId, formattedCartId, formattedProductId);
+            console.log('Cantidad aumentada:', updatedCart);
+            setCart(updatedCart); // Actualiza el estado del carrito
+        } catch (error) {
+            console.error('Error al aumentar la cantidad:', error);
         }
     };
 
-    const handleQuantityChange = (productId, newQuantity) => {
-        const stock = products[productId]?.stock || 0; // Obtener stock del producto
-        if (newQuantity < 1) {
-            handleRemove(productId);
-            return;
+    const handleDecrease = async (productId) => {
+        try {
+            const formattedCartId = cartId.toString();  // Convertir a string
+            const formattedProductId = productId.toString(); // Convertir a string
+            const updatedCart = await decreaseQuantity(userId, formattedCartId, formattedProductId);
+            console.log('Cantidad disminuida:', updatedCart);
+            setCart(updatedCart); // Actualiza el estado del carrito
+        } catch (error) {
+            console.error('Error al disminuir la cantidad:', error);
+        }
+    };
+
+    // Confirmación de eliminación
+    const confirmDelete = (productId) => {
+        setProductToDelete(productId);
+        setShowDeleteModal(true);
+    };
+
+    // Manejo de la eliminación de un producto
+    const handleRemove = async () => {
+        const productId = productToDelete;
+        const cartId = cart.cartId; // Asegúrate de obtener el cartId del objeto del carrito
+
+        // Verifica que cartId sea un número y no undefined o null
+        if (typeof cartId !== 'number' || isNaN(cartId)) {
+            console.error('El cartId no es un valor válido');
+            return; // Maneja el error adecuadamente
         }
 
-        // Limitar la cantidad a la cantidad en stock
-        if (newQuantity > stock) {
-            alert(`La cantidad máxima disponible es ${stock}.`);
-            newQuantity = stock; // Establecer la cantidad máxima
-        }
-
-        // Update quantity locally
-        setCart((prevCart) => {
-            const updatedItems = prevCart.items.map(item =>
-                item.product === productId ? { ...item, quantity: newQuantity } : item
-            );
-            return {
+        try {
+            // Llama a removeFromCart enviando userId, cartId y productId en el body
+            await removeFromCart(userId, productId, cartId);
+            setCart((prevCart) => ({
                 ...prevCart,
-                items: updatedItems,
-            };
-        });
+                items: prevCart.items.filter(item => item.product !== productId),
+            }));
+            setShowDeleteModal(false); // Cierra el modal después de la eliminación
+        } catch (error) {
+            console.error('Error removing item from cart:', error.message);
+        }
+    };
 
-        // Clear any existing debounce timer
-        if (debounceTimer) {
-            clearTimeout(debounceTimer);
+    const handleQuantityChange = (product, newQuantity) => {
+        // Si la cantidad es 0, abrir el modal
+        if (newQuantity === 0) {
+            showDeleteModal(product.productId); // Abre el modal
+            return; // Detener la ejecución
         }
 
-        // Set a new debounce timer to update the server after a delay
-        const newTimer = setTimeout(async () => {
-            try {
-                await removeFromCart(userId, productId);
-                await addToCart(userId, productId, newQuantity);
-            } catch (error) {
-                console.error('Error updating item quantity:', error.message);
-            }
-        }, 500); // Debounce time: waits 500ms after the last change before sending the request
+        // Asegurarse de que la cantidad no sea menor a 1
+        if (newQuantity < 1) {
+            toast.error('La cantidad no puede ser menor a 1', {
+                position: toast.POSITION.BOTTOM_CENTER,
+                autoClose: 3000,
+            });
+            return; // Bloquear la disminución
+        }
 
-        setDebounceTimer(newTimer);
+        // Si la cantidad es válida, actualizarla
+        setCart(prevCart => {
+            const updatedCart = prevCart.map(item =>
+                item.productId === product.productId
+                    ? { ...item, quantity: newQuantity }
+                    : item
+            );
+            return updatedCart;
+        });
     };
 
 
@@ -146,13 +165,12 @@ const Cart = () => {
         calculateTotal();
     }, [cart.items, products]);
 
-    // Handle order confirmation
     const handleOrderConfirmation = async () => {
         const orderData = {
             userId,
             items: cart.items.map(item => {
                 const product = products[item.product];
-                const sellerId = product?.seller; // Asegúrate de que esto incluya todos los detalles del vendedor
+                const sellerId = product?.seller;
 
                 if (!sellerId) {
                     console.error(`Invalid seller for product: ${item.product}`);
@@ -171,18 +189,16 @@ const Cart = () => {
             paymentMethod: paymentMethod.toLowerCase(),
         };
 
-
         try {
             const order = await createOrder(orderData);
             setOrderNumber(order._id);
 
-            // Limpiar carrito y avanzar al paso 3 si es transferencia
             await clearCart(userId);
             setCart({ items: [] });
             if (paymentMethod === 'Transferencia') {
                 setStep(3);
             } else {
-                setStep(4);
+                setStep(3);
             }
         } catch (error) {
             console.error('Error confirming order:', error.message);
@@ -190,235 +206,221 @@ const Cart = () => {
         }
     };
 
-    // Función para verificar el stock disponible antes de continuar
-    const checkStockAvailability = async () => {
-        try {
-            const stockIssues = [];
 
-            for (const item of cart.items) {
-                const product = await getProduct(item.product); // Obtener los detalles del producto actualizados
-                if (item.quantity > product.stock) {
-                    stockIssues.push({
-                        productId: item.product,
-                        productName: product.name,
-                        availableStock: product.stock,
-                        requestedQuantity: item.quantity
-                    });
-                }
-            }
-
-            return stockIssues;
-        } catch (error) {
-            console.error('Error checking stock availability:', error);
-            return [];
-        }
-    };
 
     const handleNextStep = async () => {
         if (step === 1) {
-            const stockIssues = await checkStockAvailability();
-            if (stockIssues.length > 0) {
-                const issueMessages = stockIssues.map(issue =>
-                    `El producto ${issue.productName} tiene solo ${issue.availableStock} unidades disponibles, pero solicitaste ${issue.requestedQuantity}.`
-                ).join('\n');
-                alert(`No se puede continuar debido a problemas de stock:\n${issueMessages}`);
-            } else {
-                setStep(2); // Si todo está bien, pasar al paso 2
-            }
-        } else if (step === 2 && paymentMethod === 'Transferencia') {
-            setStep(3); // Ir al paso de detalles de transferencia
-        } else {
-            setStep(step + 1);
+            setStep(2);
+            return;
         }
+
+        if (step === 2) {
+            // Ir al paso 3 si el método de pago es transferencia
+            setStep(3);
+            return;
+        }
+
+        // Pasar al siguiente paso por defecto
+        setStep(prevStep => prevStep + 1);
     };
 
+
     const handleBack = () => {
-        // Regresar a la vista anterior
         window.history.back();
     };
 
-
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error}</p>;
+    if (loading) return <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+    </div>;
+    if (error) return <div className="text-red-500 text-center p-4">{error}</div>;
 
     return (
-        <div className="cart-page">
-            <div className="cart-container">
-                <h1 className="cart-title">
-                    <ShoppingCart className="icon" /> Tu Carrito
-                </h1>
+        <div className="bg-gray-100 min-h-screen py-8">
+            <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="bg-gray-800 text-white p-4 flex items-center justify-between">
+                    <h1 className="text-2xl font-bold flex items-center">
+                        <ShoppingCart className="mr-2" /> Tu Carrito
+                    </h1>
+                    <div className="flex space-x-2">
+                        {[1, 2, 3].map((s) => (
+                            <div
+                                key={s}
+                                className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= s ? 'bg-green-500' : 'bg-gray-600'
+                                    }`}
+                            >
+                                {s}
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
-                {loading ? (
-                    <p className="loading">Cargando...</p>
-                ) : error ? (
-                    <p className="error">Error: {error}</p>
-                ) : (
-                    <>
-                        {step === 1 && (
-                            <>
-                                {cart.items && cart.items.length > 0 ? (
-                                    <ul className="cart-items">
-                                        {cart.items.map(item => (
-                                            <li key={item.product} className="cart-item">
-                                                <img
-                                                    src={products[item.product]?.images?.[0] || "/api/placeholder/80/80"}
-                                                    alt={products[item.product]?.name}
-                                                    className="item-image"
-                                                    onError={(e) => { e.target.src = "/api/placeholder/80/80"; }}
-                                                />
+                <div className="p-6">
+                    {step === 1 && (
+                        <>
+                            {cart.items && cart.items.length > 0 ? (
+                                <ul className="divide-y divide-gray-200">
+                                    {cart.items.map(item => (
+                                        <li key={item.product} className="py-4 flex items-center">
+                                            <img
+                                                src={products[item.product]?.images?.[0] || "/api/placeholder/80/80"}
+                                                alt={products[item.product]?.name}
+                                                className="h-16 w-16 rounded object-cover mr-4"
+                                                onError={(e) => { e.target.src = "/api/placeholder/80/80"; }}
+                                            />
+                                            <div className="flex-1">
+                                                <h2 className="text-lg font-semibold">{products[item.product]?.name || 'Cargando...'}</h2>
+                                                <div className="flex items-center mt-2">
+                                                    {item.quantity > 1 && (
+                                                        <button
+                                                            onClick={() => handleDecrease(item.product)}
+                                                            className="text-gray-500 focus:outline-none focus:text-gray-600"
+                                                        >
+                                                            <Minus size={18} />
+                                                        </button>
+                                                    )}
+                                                    <input
+                                                        type="number"
 
-                                                <div className="item-details">
-                                                    <h2 className="item-name">{products[item.product]?.name || 'Cargando...'}</h2>
-                                                    <div className="quantity-controls">
+                                                        readOnly
+                                                        min="1"
+                                                        value={item.quantity}
+                                                        onChange={(e) => handleQuantityChange(item.product, Number(e.target.value))}
+                                                        className="mx-2 border text-center w-12" style={{ pointerEvents: 'none' }}
+                                                    />
+                                                    {item.quantity < products[item.product]?.stock && (
                                                         <button
-                                                            onClick={() => handleQuantityChange(item.product, item.quantity - 1)}
-                                                            className="quantity-btn"
+                                                            onClick={() => handleIncrease(item.product)}
+                                                            className="text-gray-500 focus:outline-none focus:text-gray-600"
                                                         >
-                                                            <Minus size={16} />
+                                                            <Plus size={18} />
                                                         </button>
-                                                        <input
-                                                            type="number"
-                                                            min="1"
-                                                            value={item.quantity}
-                                                            onChange={(e) => handleQuantityChange(item.product, Number(e.target.value))}
-                                                            className="quantity-input"
-                                                        />
-                                                        <button
-                                                            onClick={() => handleQuantityChange(item.product, item.quantity + 1)}
-                                                            className="quantity-btn"
-                                                        >
-                                                            <Plus size={16} />
-                                                        </button>
-                                                    </div>
+                                                    )}
                                                 </div>
-                                                <div className="item-price">
-                                                    <p className="price">${(products[item.product]?.price * item.quantity || 0).toFixed(2)}</p>
-                                                    <button
-                                                        onClick={() => handleRemove(item.product)}
-                                                        className="remove-btn"
-                                                    >
-                                                        <Trash2 size={16} className="icon" /> Eliminar
-                                                    </button>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p className="empty-cart">Tu carrito está vacío.</p>
-                                )}
-                                <div className="cart-summary">
-                                    <h2 className="total">Total: ${calculateTotal().toFixed(2)}</h2>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-lg font-semibold">${(products[item.product]?.price * item.quantity || 0).toFixed(2)}</p>
+                                                <button
+                                                    onClick={() => confirmDelete(item.product)}
+                                                    className="text-red-500 hover:text-red-700 mt-2"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-center text-gray-500 py-4">Tu carrito está vacío.</p>
+                            )}
+                            <div className="mt-8 flex justify-between items-center">
+                                <button onClick={handleBack} className="text-gray-600 hover:text-gray-800">
+                                    <ArrowLeft className="inline mr-2" /> Regresar
+                                </button>
+                                <div>
+                                    <h2 className="text-xl font-bold">Total: ${calculateTotal().toFixed(2)}</h2>
                                     <button
                                         onClick={handleNextStep}
-                                        className="next-btn"
-                                        disabled={cart.items.length === 0} // Deshabilitar si el carrito está vacío
+                                        className={`mt-4 px-4 py-2 rounded transition duration-300 ${cart.items.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 text-white'}`}
+                                        disabled={cart.items.length === 0}
                                     >
                                         Siguiente
                                     </button>
-                                    <button onClick={handleBack} className='back-btn1'>
-                                        Regresar
-                                    </button>
-
 
                                 </div>
-                            </>
-                        )}
+                            </div>
+                        </>
+                    )}
 
-                        {step === 2 && (
-                            <div className="payment-selection">
-                                <h2 className="section-title">Selecciona Tu Método de Pago</h2>
-                                <div className="payment-options">
-                                    <label className="payment-option">
-                                        <input
-                                            type="radio"
-                                            name="paymentMethod"
-                                            value="Efectivo"
-                                            checked={paymentMethod === 'Efectivo'}
-                                            onChange={() => setPaymentMethod('Efectivo')}
-                                        />
-                                        <DollarSign className="icon" />
-                                        <span>Pago en Efectivo</span>
-                                    </label>
-                                    <label className="payment-option">
-                                        <input
-                                            type="radio"
-                                            name="paymentMethod"
-                                            value="Transferencia"
-                                            checked={paymentMethod === 'Transferencia'}
-                                            onChange={() => setPaymentMethod('Transferencia')}
-                                        />
-                                        <CreditCard className="icon" />
-                                        <span>Pago por Transferencia</span>
-                                    </label>
-                                </div>
-                                <div className="action-buttons">
+                    {step === 2 && (
+                        <div className="payment-selection">
+                            <h2 className="text-2xl font-bold mb-6">Selecciona Tu Método de Pago</h2>
+                            <div className="space-y-4">
+                                <label className="flex items-center p-4 border rounded cursor-pointer hover:bg-gray-50">
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value="Efectivo"
+                                        checked={paymentMethod === 'Efectivo'}
+                                        onChange={() => setPaymentMethod('Efectivo')}
+                                        className="mr-2"
+                                    />
+                                    <DollarSign className="mr-2" />
+                                    <span>Pago en Efectivo</span>
+                                </label>
+                                <label className="flex items-center p-4 border rounded cursor-pointer hover:bg-gray-50">
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value="Transferencia"
+                                        checked={paymentMethod === 'Transferencia'}
+                                        onChange={() => setPaymentMethod('Transferencia')}
+                                        className="mr-2"
+                                    />
+                                    <CreditCard className="mr-2" />
+                                    <span>Pago por Transferencia</span>
+                                </label>
+                            </div>
+                            <div className="mt-8 flex justify-between">
+                                <button
+                                    onClick={() => setStep(1)}
+                                    className="text-gray-600 hover:text-gray-800"
+                                >
+                                    <ArrowLeft className="inline mr-2" /> Atrás
+                                </button>
+                                <button
+                                    onClick={handleOrderConfirmation}
+                                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-300"
+                                >
+                                    Verificar Orden
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {step === 3 && (
+                        <div className="order-complete text-center">
+                            <CheckCircle className="mx-auto text-green-500 w-16 h-16 mb-4" />
+                            <h2 className="text-2xl font-bold">¡Orden Completada!</h2>
+                            <p className="mt-4">Gracias por tu compra. Tu orden ha sido registrada exitosamente.</p>
+                            <button
+                                onClick={() => (window.location.href = '/home')}
+                                className="mt-6 mx-5 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-300"
+                            >
+                                Regresar a Inicio
+                            </button>
+                            <button
+                                onClick={() => (window.location.href = '/historial')}
+                                className="mt-6 mx-5 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300"
+                            >
+                                Revisar Ordenes
+                            </button>
+
+                        </div>
+                    )}
+
+                    {/* Modal de confirmación de eliminación */}
+                    {showDeleteModal && (
+                        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                            <div className="bg-white rounded p-6 w-96">
+                                <h2 className="text-lg font-semibold mb-4">¿Estás seguro de eliminar este producto?</h2>
+                                <div className="flex justify-between">
                                     <button
-                                        onClick={() => setStep(1)}
-                                        className="back-btn"
+                                        onClick={() => setShowDeleteModal(false)}
+                                        className="px-4 py-2 bg-gray-500 text-white rounded"
                                     >
-                                        <ArrowLeft size={16} className="icon" /> Atrás
+                                        Cancelar
                                     </button>
                                     <button
-                                        onClick={handleOrderConfirmation}
-                                        className="confirm-btn"
+                                        onClick={handleRemove}
+                                        className="px-4 py-2 bg-red-500 text-white rounded"
                                     >
-                                        Confirmar Pedido
+                                        Eliminar
                                     </button>
                                 </div>
                             </div>
-                        )}
-
-                        {step === 3 && (
-                            <div className="order-details">
-                                <h2 className="order-title">Detalles de la Orden</h2>
-
-                                <h3>Información del Vendedor</h3>
-                                {cart.items.map(item => {
-                                    const product = products[item.product];
-                                    return (
-                                        <div key={item.product} className="seller-info">
-                                            {/* Verifica que el producto existe y tiene la información del vendedor */}
-                                            {product && (
-                                                <>
-                                                    <h4>{product.sellerName} {product.sellerFirstName} {product.sellerLastName}</h4>
-                                                    <p>Email: {product.sellerEmail}</p>
-                                                    <p>CLABE: {product.sellerClabe}</p>
-                                                </>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-
-                                <h3>Resumen de la Orden</h3>
-                                <ul className="order-summary">
-                                    {cart.items.map(item => {
-                                        const product = products[item.product];
-                                        return (
-                                            <li key={item.product} className="order-item">
-                                                {product && (
-                                                    <>
-                                                        <span>{product.name} x {item.quantity}</span>
-                                                        <span>${(product.price * item.quantity).toFixed(2)}</span>
-                                                    </>
-                                                )}
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-
-                                <h3>Total: ${calculateTotal().toFixed(2)}</h3>
-                            </div>
-                        )}
-
-                        {step === 4 && (
-                            <div className="order-confirmation">
-                                <CheckCircle size={64} className="icon" />
-                                <h2 className="confirmation-title">Pedido Confirmado</h2>
-                                <p className="confirmation-message">¡Gracias por tu compra! Tu pedido ha sido confirmado exitosamente.</p>
-                            </div>
-                        )}
-                    </>
-                )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

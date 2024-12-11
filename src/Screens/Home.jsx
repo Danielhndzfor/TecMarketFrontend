@@ -72,7 +72,7 @@ const Home = () => {
     return (
         <>
             <NavBar />
-            <div className="min-h-screen mx-3 my-3">
+            <div className="mx-3 mt-5">
                 {/* Sección de bienvenida */}
                 <section className="mb-12">
                     <div className="bg-green-600 text-white rounded-lg p-8 flex flex-col md:flex-row items-center justify-between ">
@@ -137,11 +137,12 @@ const Home = () => {
                         </p>
                     )}
                     {filteredProducts.length > 0 && (
-                        <div className="grid place-items-center mt-4"> {/* Grid para centrar */}
+                        <div className="grid place-items-center mt-6">
                             <Button className="bg-green-700" onClick={handleViewMore}>
                                 Conocer más productos
                             </Button>
                         </div>
+
                     )}
                 </section>
 

@@ -37,27 +37,20 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const response = await axios.post('/auth/login', { email, password });
-    
             const { token, user } = response.data;
-    
-            // Guarda el token en localStorage
             localStorage.setItem('token', token);
-    
-            // Actualiza el estado de autenticación
             setUser(user);
-
-            // Redirige a una ruta protegida si el role es admin y a otra si es vendedor o comprador
             if (user.role === 'admin') {
-                window.location.href = '/admin'; // O la ruta protegida que desees
+                window.location.href = '/admin';
             } else {
-                window.location.href = '/home'; // O la ruta protegida que desees
+                window.location.href = '/home';
             }
-    
         } catch (error) {
             console.error('Error durante el login:', error.response?.data?.message || error.message);
             throw error;
         }
     };
+    
     
     
 

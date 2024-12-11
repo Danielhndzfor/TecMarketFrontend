@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // Usa tu AuthContext
 import { ChefHat, Coffee } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -16,15 +17,25 @@ function Login() {
         }
     }, [user, navigate]);
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!email || !password) {
+            toast.error('Por favor, completa todos los campos.');
+            return;
+        }
+
         try {
             await login(email, password);
             setError('');
-            navigate(user.role === 'admin' ? '/admin' : '/home'); // Redirección aquí
+            if (user) {
+                const destination = user.role === 'admin' ? '/admin' : '/home';
+                navigate(destination);
+            }
         } catch (err) {
-            console.error('Error al iniciar sesión:', err);
-            setError('Credenciales incorrectas o error al conectarse.');
+            // Manejando errores sin imprimirlos en la consola
+            toast.error('Credenciales incorrectas o error al conectarse.');
         }
     };
 
@@ -45,6 +56,7 @@ function Login() {
                             type="email"
                             placeholder="tu@email.com"
                             value={email}
+                            required
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full px-3 py-2 border rounded-md"
                         />
@@ -58,6 +70,7 @@ function Login() {
                             type="password"
                             placeholder="••••••••"
                             value={password}
+                            required
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full px-3 py-2 border rounded-md"
                         />

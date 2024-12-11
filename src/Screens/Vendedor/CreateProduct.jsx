@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'; // Asegúrate de tener react-rou
 import { createProduct } from '../../api/products'; // Ajusta la ruta según tu estructura
 import { getCategories } from '../../api/category';
 import NavBar from '../../Components/NavBar';
+import { toast } from 'react-toastify'; // Importa toast de react-toastify
 
 // Función para obtener el ID del vendedor del token
 const getSellerIdFromToken = () => {
@@ -66,12 +67,12 @@ const CreateProduct = () => {
             // Llamada a la API para crear el producto
             await createProduct(formData);
             // Manejar éxito
-            setSuccessMessage('Producto creado exitosamente!'); // Mensaje de éxito
+            toast.success('Producto creado exitosamente!'); // Mensaje de éxito
 
             // Redirigir a la página de productos después de 2 segundos
             setTimeout(() => {
                 Navigate('/home');
-            }, 2000);
+            }, 5000);
 
             // Limpia el formulario
             setName('');
@@ -89,87 +90,88 @@ const CreateProduct = () => {
     return (
         <>
             <NavBar />
-            <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-                <h2 className="text-2xl font-semibold text-center text-emerald-600 mb-4">Crear Producto</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Nombre"
-                        required
-                        className="w-full p-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                    <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Descripción"
-                        required
-                        className="w-full p-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                    <input
-                        type="number"
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                        placeholder="Precio"
-                        required
-                        className="w-full p-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                    <input
-                        type="number"
-                        value={stock}
-                        onChange={(e) => setStock(e.target.value)}
-                        placeholder="Stock"
-                        required
-                        className="w-full p-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                    <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        required
-                        className="w-full p-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    >
-                        <option value="">Selecciona una categoría</option>
-                        {categories.map((cat) => (
-                            <option key={cat._id} value={cat._id}>{cat.name}</option>
-                        ))}
-                    </select>
-                    <input
-                        type="file"
-                        multiple
-                        onChange={handleImageChange}
-                        className="w-full p-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                    <div className="flex flex-wrap mt-4">
-                        {Array.from(images).map((image, index) => (
-                            <div key={index} className="w-1/5 p-1">
-                                <img
-                                    src={URL.createObjectURL(image)}
-                                    alt={`Imagen ${index + 1}`}
-                                    className="w-full h-20 object-cover border border-emerald-300 rounded"
-                                />
-                            </div>
-                        ))}
-                        {images.length < 5 && (
-                            <div className="w-1/5 p-1 border border-dashed border-emerald-300 rounded h-20 flex items-center justify-center">
-                                <span className="text-gray-400">Espacio para imagen</span>
-                            </div>
-                        )}
-                    </div>
-                    <button
-                        type="submit"
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded transition duration-200"
-                    >
-                        Crear Producto
-                    </button>
-                    <button
-                        onClick={() => Navigate(window.history.back())}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded transition duration-200"
-                    >
-                        Cancelar
-                    </button>
-                </form>
-                {successMessage && <p className="mt-4 text-green-600 text-center">{successMessage}</p>} {/* Mostrar mensaje de éxito */}
+            <div className='container-product'>
+                <div className="w-50 h-100 mx-auto m-10 p-6 bg-white rounded-lg shadow-md">
+                    <h2 className="text-2xl font-semibold text-center text-emerald-600 mb-10">Crear Producto</h2>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Nombre"
+                            required
+                            className="w-full p-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                        <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Descripción"
+                            required
+                            className="w-full p-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                        <input
+                            type="number"
+                            value={price}
+                            onChange={(e) => setPrice(e.target.value)}
+                            placeholder="Precio"
+                            required
+                            className="w-full p-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                        <input
+                            type="number"
+                            value={stock}
+                            onChange={(e) => setStock(e.target.value)}
+                            placeholder="Stock"
+                            required
+                            className="w-full p-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                        <select
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                            required
+                            className="w-full p-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        >
+                            <option value="">Selecciona una categoría</option>
+                            {categories.map((cat) => (
+                                <option key={cat._id} value={cat._id}>{cat.name}</option>
+                            ))}
+                        </select>
+                        <input
+                            type="file"
+                            multiple
+                            onChange={handleImageChange}
+                            className="w-full p-2 border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                        <div className="flex flex-wrap mt-4">
+                            {Array.from(images).map((image, index) => (
+                                <div key={index} className="w-1/5 p-1">
+                                    <img
+                                        src={URL.createObjectURL(image)}
+                                        alt={`Imagen ${index + 1}`}
+                                        className="w-full h-20 object-cover border border-emerald-300 rounded"
+                                    />
+                                </div>
+                            ))}
+                            {images.length < 5 && (
+                                <div className="w-1/5 p-1 border border-dashed border-emerald-300 rounded h-20 flex items-center justify-center">
+                                    <span className="text-gray-400">Espacio para imagen</span>
+                                </div>
+                            )}
+                        </div>
+                        <button
+                            type="submit"
+                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded transition duration-200"
+                        >
+                            Crear Producto
+                        </button>
+                        <button
+                            onClick={() => Navigate(window.history.back())}
+                            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded transition duration-200"
+                        >
+                            Cancelar
+                        </button>
+                    </form>
+                </div>
             </div>
         </>
     );

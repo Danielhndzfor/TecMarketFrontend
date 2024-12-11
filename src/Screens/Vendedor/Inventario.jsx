@@ -4,9 +4,11 @@ import { useAuth } from '../../context/AuthContext';
 import { getProducts, updateProduct, deleteProduct } from '../../api/products';
 import { getCategories } from '../../api/category';
 import '../../Css/Inventario.css';
+import { toast } from 'react-toastify';
 
 function Inventario() {
     const [products, setProducts] = useState([]);
+    const [productToDelete, setProductToDelete] = useState(null);
     const [editProduct, setEditProduct] = useState(null);
     const [categories, setCategories] = useState([]);
     const [message, setMessage] = useState('');
@@ -16,6 +18,9 @@ function Inventario() {
 
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10); // Número de productos por página
+
 
 
     const fetchProducts = async () => {
@@ -79,7 +84,7 @@ function Inventario() {
             console.log('Producto actualizado:', updatedProduct);
 
             // Muestra el mensaje de éxito y cierra el modal de edición
-            setMessage('Producto actualizado correctamente');
+            toast.success('Producto actualizado correctamente');
             setEditProduct(null); // Cierra el modal de edición
 
             // Vuelve a obtener la lista de productos para asegurarse de que la tabla esté actualizada
@@ -87,20 +92,22 @@ function Inventario() {
 
         } catch (error) {
             console.error('Error al actualizar el producto:', error);
-            setMessage('Error al actualizar el producto');
+            toast.error('Error al actualizar el producto');
         } finally {
             setIsUpdating(false); // Desactivar loading después de la actualización
         }
     };
 
-    const handleDeleteProduct = async (id) => {
+    const handleDeleteProduct = async () => {
+        if (!productToDelete) return;
         try {
-            await deleteProduct(id);
-            setProducts(products.filter(p => p._id !== id));
-            setMessage('Producto eliminado correctamente');
+            await deleteProduct(productToDelete._id);
+            setProducts(products.filter(p => p._id !== productToDelete._id));
+            toast.success('Producto eliminado correctamente');
+            setProductToDelete(null); // Cerrar modal
         } catch (error) {
             console.error('Error al eliminar el producto:', error);
-            setMessage('Error al eliminar el producto');
+            toast.error('Error al eliminar el producto');
         }
     };
 
@@ -138,6 +145,17 @@ function Inventario() {
 
     const totalProducts = products.length;
 
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentProducts = products.slice(indexOfFirstItem, indexOfLastItem);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+    const totalPages = Math.ceil(products.length / itemsPerPage);
+
+
+
     return (
         <div className="inventory-container">
             {(isLoading || isUpdating) && (
@@ -168,7 +186,6 @@ function Inventario() {
                                     <th>Stock</th>
                                     <th>Estatus</th>
                                     <th>Categoría</th>
-                                    <th>Calificación</th>
                                     {user.role === 'admin' && (
                                         <>
                                             <th>ID Vendedor</th>
@@ -199,7 +216,6 @@ function Inventario() {
                                             {getStatus(product.stock, product.initialStock)}
                                         </td>
                                         <td>{product.category.name}</td>
-                                        <td>{product.rating}</td>
                                         {user.role === 'admin' && (
                                             <>
                                                 <td>{product.seller ? product.seller._id : 'N/A'}</td>
@@ -213,7 +229,7 @@ function Inventario() {
                                                     <button className="edit-btn" onClick={() => setEditProduct(product)}>
                                                         <i className="fas fa-edit"></i>
                                                     </button>
-                                                    <button className="delete-btn" onClick={() => handleDeleteProduct(product._id)}>
+                                                    <button className="delete-btn" onClick={() => setProductToDelete(product)}>
                                                         <i className="fas fa-trash"></i>
                                                     </button>
                                                 </div>
@@ -224,13 +240,35 @@ function Inventario() {
                                 ))}
                             </tbody>
                         </table>
+                        <div className="pagination">
+                            {Array.from({ length: totalPages }, (_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handlePageChange(index + 1)}
+                                    className={currentPage === index + 1 ? 'active' : ''}
+                                >
+                                    {index + 1}
+                                </button>
+                            ))}
+                        </div>
+
                     </div>
 
                     {editProduct && (
                         <div className="edit-product-modal">
                             <div className="modal-content1">
                                 <h2>Editar Producto</h2>
-                                <input type="file" multiple onChange={handleImageChange} className="file-input" />
+                                {/* Botón personalizado para el input de archivos */}
+                                <label htmlFor="file-input" className="custom-file-label">
+                                    Elegir archivos
+                                </label>
+                                <input
+                                    id="file-input"
+                                    type="file"
+                                    multiple
+                                    onChange={handleImageChange}
+                                    className="file-input-hidden"
+                                />
                                 {editProduct.images && (
                                     <div className="image-preview-container">
                                         {editProduct.images.map((image, index) => (
@@ -296,6 +334,20 @@ function Inventario() {
                                 <div className="modal-actions">
                                     <button className="update-btn" onClick={handleEditProduct} disabled={isUpdating}>{isUpdating ? 'Actualizando...' : 'Actualizar Producto'}</button>
                                     <button className="cancel-btn" onClick={() => setEditProduct(null)}>Cancelar</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Modal de Confirmación de Eliminación */}
+                    {productToDelete && (
+                        <div className="delete-modal">
+                            <div className="delete-modal-content">
+                                <h3>¿Estás seguro de que deseas eliminar este producto?</h3>
+                                <p>Nombre: {productToDelete.name}</p>
+                                <div className="delete-modal-actions">
+                                    <button className="confirm-btn" onClick={handleDeleteProduct}>Eliminar</button>
+                                    <button className="cancel-btn" onClick={() => setProductToDelete(null)}>Cancelar</button>
                                 </div>
                             </div>
                         </div>

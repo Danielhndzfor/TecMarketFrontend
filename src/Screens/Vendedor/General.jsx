@@ -152,7 +152,7 @@ function General() {
                     </Card>
                 </Col>
             </Row>
-            <style jsx global>{`
+            <style>{`
                 .food-pattern-background {
                     position: absolute;
                     top: 0;

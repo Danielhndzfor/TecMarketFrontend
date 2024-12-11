@@ -111,8 +111,6 @@ const ProductCard = ({ product }) => {
                     )}
                 </Carousel>
 
-
-
                 {notification && (
                     <div className="notification">Producto Añadido</div>
                 )}
@@ -125,8 +123,15 @@ const ProductCard = ({ product }) => {
                         variant="success" // Cambiado a verde
                         onClick={handleAddToCart}
                         className="add-to-cart-button"
+                        disabled={product.stock <= 0} // Deshabilitar si no hay stock
                     >
-                        Agregar al carrito
+                        {product.stock <= 0 ? (
+                            <>
+                                Sin Stock
+                            </>
+                        ) : (
+                            'Agregar al carrito'
+                        )}
                     </Button>
                 </div>
             </div>

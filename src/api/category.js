@@ -55,7 +55,7 @@ export const updateCategory = async (categoryId, formData) => {
         }
 
         // Realiza la solicitud PUT para actualizar la categoría
-        const response = await axios.put(`https://tec-market-backend.vercel.app/api/categories/${categoryId}`, formData);
+        const response = await axios.put(`${API_URL}/api/categories/${categoryId}`, formData);
 
         // Si la solicitud es exitosa, devuelve la categoría actualizada
         return response.data;

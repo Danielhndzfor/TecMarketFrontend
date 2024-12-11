@@ -15,17 +15,19 @@ const Historial = () => {
     const fetchOrdersByBuyer = async () => {
         setError(''); // Limpiar cualquier error previo
         setLoading(true); // Activar estado de carga
-
+    
         try {
             const user = await getUser();
             setUserId(user._id);
-
+    
             const fetchedOrders = await getOrdersByBuyer(user._id);
             if (fetchedOrders.length === 0) {
                 setError('No has realizado ninguna compra.');
-                setOrders([]);
+                setOrders([]); // Si no hay órdenes, establecer un arreglo vacío
             } else {
-                setOrders(fetchedOrders);
+                // Ordenar las órdenes de la más reciente a la más antigua
+                const sortedOrders = fetchedOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                setOrders(sortedOrders); // Establecer las órdenes ordenadas
             }
         } catch (error) {
             console.error('Error al obtener las órdenes:', error);
@@ -34,6 +36,7 @@ const Historial = () => {
             setLoading(false); // Desactivar estado de carga
         }
     };
+    
 
     useEffect(() => {
         fetchOrdersByBuyer();

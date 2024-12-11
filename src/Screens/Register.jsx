@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Coffee, UserPlus } from "lucide-react";
+import { register } from "../api/auth";
+import { toast } from "react-toastify";
 
 function Register() {
     const [formData, setFormData] = useState({
@@ -25,17 +27,51 @@ function Register() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (password !== confirmPassword) {
-            alert("Las contraseñas no coinciden");
+    
+        if (!name || !firstName || !dateOfBirth || !phoneNumber || !email || !password || !confirmPassword) {
+            toast.error("Por favor, completa todos los campos obligatorios.");
             return;
         }
+    
+        if (password !== confirmPassword) {
+            toast.error("Las contraseñas no coinciden.");
+            return;
+        }
+    
         try {
-            console.log("Datos enviados:", formData); // Aquí puedes manejar tu registro
-            navigate("/");
+            // Llamar a la función de registro que hemos importado
+            const response = await register(
+                name, 
+                firstName, 
+                lastName, 
+                dateOfBirth, 
+                phoneNumber, 
+                email, 
+                password, 
+                formData.role
+            );
+    
+            toast.success("¡Registro exitoso! Redirigiendo...");
+            
+            setTimeout(() => {
+                navigate("/"); // Redirigir a la página de inicio de sesión
+            }, 5000);  // Espera 2 segundos antes de redirigir
         } catch (error) {
-            console.error("Error al registrar el usuario:", error.message);
+            
+            // Verificar si el error tiene la respuesta del backend
+            if (error.response && error.response.data && error.response.data.message) {
+                const errorMessage = error.response.data.message;
+                toast.error(errorMessage);  // Mostrar el mensaje de error desde el backend
+            } else {
+                toast.error("El usuario ya existe.");  // Mostrar un mensaje genérico
+            }
         }
     };
+    
+    
+    
+    
+    
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-green-50">
@@ -47,7 +83,7 @@ function Register() {
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                            Nombre
+                            *Nombre(s)
                         </label>
                         <input
                             id="name"
@@ -61,7 +97,7 @@ function Register() {
                     </div>
                     <div>
                         <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                            Primer Nombre
+                            *Primer Apellido
                         </label>
                         <input
                             id="firstName"
@@ -75,7 +111,7 @@ function Register() {
                     </div>
                     <div>
                         <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                            Apellidos
+                            Segundo Apellido
                         </label>
                         <input
                             id="lastName"
@@ -89,7 +125,7 @@ function Register() {
                     </div>
                     <div>
                         <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700">
-                            Fecha de Nacimiento
+                            *Fecha de Nacimiento
                         </label>
                         <input
                             id="dateOfBirth"
@@ -102,7 +138,7 @@ function Register() {
                     </div>
                     <div>
                         <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
-                            Número de Teléfono
+                            *Número de Teléfono
                         </label>
                         <input
                             id="phoneNumber"
@@ -116,7 +152,7 @@ function Register() {
                     </div>
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                            Correo Electrónico
+                            *Correo Electrónico
                         </label>
                         <input
                             id="email"
@@ -130,7 +166,7 @@ function Register() {
                     </div>
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                            Contraseña
+                            *Contraseña
                         </label>
                         <input
                             id="password"
@@ -144,7 +180,7 @@ function Register() {
                     </div>
                     <div>
                         <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                            Confirmar Contraseña
+                            *Confirmar Contraseña
                         </label>
                         <input
                             id="confirmPassword"

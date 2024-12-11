@@ -28,6 +28,8 @@ export const addToCart = async (userId, cartId, productId, quantity) => {
     }
 };
 
+
+
 // Función para obtener el carrito del usuario
 export const getCart = async (userId) => {
     try {
@@ -53,6 +55,47 @@ export const removeFromCart = async (userId, productId, cartId) => { // Reordena
         throw error;
     }
 };
+
+// Función para aumentar la cantidad de un producto en el carrito
+export const increaseQuantity = async (userId, cartId, productId) => {
+    try {
+        // Asegúrate de que cartId y productId sean cadenas
+        const response = await axiosInstance.patch(`/cart/${cartId}/increase`, {
+            userId,      // Incluye userId
+            productId,   // Incluye productId
+            cartId,      // Incluye cartId
+        });
+
+        return response.data;  // Devuelve el carrito actualizado
+    } catch (error) {
+        console.error('Error al aumentar la cantidad del producto:', error);
+        throw error;
+    }
+};
+
+
+
+// Función para disminuir la cantidad de un producto en el carrito
+export const decreaseQuantity = async (userId, cartId, productId) => {
+    try {
+        // Asegúrate de que cartId y productId sean cadenas
+        const response = await axiosInstance.patch(`/cart/${cartId}/decrease`, {
+            userId,      // Incluye userId
+            productId,   // Incluye productId
+            cartId,      // Incluye cartId
+        });
+
+        return response.data;  // Devuelve el carrito actualizado
+    } catch (error) {
+        console.error('Error al aumentar la cantidad del producto:', error);
+        throw error;
+    }
+};
+
+
+
+
+
 
 
 // Función para vaciar el carrito (ejecutada tras confirmar la compra)

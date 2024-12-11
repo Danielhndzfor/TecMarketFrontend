@@ -33,7 +33,6 @@ export const login = async (email, password) => {
     }
 };
 
-// Función para hacer registro
 export const register = async (name, firstName, lastName, dateOfBirth, phoneNumber, email, password, role) => {
     try {
         const response = await axios.post(`${API_URL}/api/auth/register`, {
@@ -44,13 +43,20 @@ export const register = async (name, firstName, lastName, dateOfBirth, phoneNumb
             phoneNumber,
             email,
             password,
-            role, // El role se envía aquí (opcional)
+            role,
         });
         return response.data;
     } catch (error) {
-        throw new Error(error.response?.data?.message || 'Error durante el registro');
+        if (error.response) {
+            // Si el error tiene respuesta, lanzar el mensaje de error recibido
+            throw new Error(error.response.data.message || 'Error durante el registro');
+        } else {
+            // Si no hay respuesta, lanzar un error genérico
+            throw new Error('Error durante el registro');
+        }
     }
 };
+
 
 // 1. Actualizar rol de un usuario específico
 export const updateUserRole = async (userId, newRole) => {
@@ -83,15 +89,9 @@ export const getAllUsers = async () => {
 export const updateUser = async (userId, updatedData) => {
     const token = localStorage.getItem('token');
 
-    // Verifica que userId es un número válido, si es necesario
-    const numericUserId = parseInt(userId, 10);
-    if (isNaN(numericUserId)) {
-        throw new Error('ID de usuario no válido');
-    }
-
     try {
         // Realiza la solicitud PUT para actualizar el usuario
-        const response = await axios.put(`${API_URL}/api/auth/update-user/${numericUserId}`, updatedData, {
+        const response = await axios.put(`${API_URL}/api/auth/update-user/${userId}`, updatedData, {
             headers: { Authorization: `Bearer ${token}` } // Incluye el token aquí
         });
         return response.data;
@@ -100,6 +100,7 @@ export const updateUser = async (userId, updatedData) => {
         throw new Error(error.response?.data?.message || 'Error al actualizar el usuario');
     }
 };
+
 
 
 // Función para obtener el total de usuarios

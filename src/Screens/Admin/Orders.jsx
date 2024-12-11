@@ -76,7 +76,7 @@ const Historial = () => {
     return (
         <>
             <Navbar />
-            <div className="h-100">
+            <div className="h-100 mb-10">
                 <div className="mx-20 mt-20">
                     <h1 className="text-3xl font-light text-black-500 mb-4 text-center">Historial de Compras</h1>
                     {error && <Alert variant="danger">{error}</Alert>}

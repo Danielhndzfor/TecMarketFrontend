@@ -83,11 +83,11 @@ function Categories() {
     return (
         <>
             <Navbar />
-            <div className="flex flex-col h-1 mt-10">
+            <div className="flex flex-col h-1 mb-10">
                 <div className="flex-grow container mx-auto mt-10">
                     <div className="mb-4">
                         <h1 className="text-3xl font-light text-black-500 mb-2 text-center">Lista de Categorías</h1>
-                        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 w-full">
+                        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 w-full mt-3">
                             <div className="flex items-center gap-4 w-full sm:w-auto">
                                 <div className="relative flex-1 sm:flex-initial">
                                     <input

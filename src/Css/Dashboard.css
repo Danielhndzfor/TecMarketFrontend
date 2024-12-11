@@ -7,6 +7,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 50px;
 }
 
 .earnings-container {
@@ -295,18 +296,29 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
+.modal-contentD {
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    margin: 0 auto;
+}
 
-.modal-content h2 {
+
+.modal-contentD h2 {
     margin-top: 10px;
     margin-bottom: 15px;
     text-align: center;
     color: #343a40;
+    font-weight: bold;
 }
 
-.modal-content p {
+.modal-contentD p {
     font-size: 16px;
     line-height: 1.5;
     margin-bottom: 15px;
+    text-align: left;
 }
 
 .modal-contentD button {
@@ -360,3 +372,42 @@
     width: 100%;
 }
 
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.pagination-button {
+    background-color: #f0f0f0; /* Light gray background */
+    color: #333; /* Dark text */
+    border: 1px solid #ddd; /* Light border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination-button:hover {
+    background-color: #377e3a; /* Blue on hover */
+    color: #fff; /* White text on hover */
+    border-color: #377e3a;
+}
+
+.pagination-button.active {
+    background-color: #4CAF50; /* Active button color */
+    color: #fff; /* White text */
+    border-color: #4CAF50;
+    font-weight: bold;
+    transform: scale(1.1); /* Slightly larger */
+}
+
+@media (max-width: 600px) {
+    .pagination-button {
+        padding: 8px 12px; /* Smaller buttons for mobile */
+        font-size: 14px;
+    }
+}

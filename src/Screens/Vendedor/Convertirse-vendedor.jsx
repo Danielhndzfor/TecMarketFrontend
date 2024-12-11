@@ -36,6 +36,7 @@ function SellerForm() {
             setMessageType('success');
             setMessage('Tu cuenta ha sido actualizada a vendedor.');
             navigate('/profile');
+            window.location.reload();
         } catch (error) {
             console.error('Error al actualizar el rol a vendedor:', error.response?.data?.message || error.message);
             setMessageType('danger');
